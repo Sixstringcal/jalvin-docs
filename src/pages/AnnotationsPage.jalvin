@@ -1,0 +1,91 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AnnotationsPage.jalvin — Annotation syntax and built-in annotations
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/ui.Box
+import @jalvin/ui.Text
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+
+component fun AnnotationsPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Annotations",
+        subtitle = "How to apply annotations to declarations and the built-in annotations provided by the compiler.") {
+
+        DocSection(title = "Annotation Syntax") {
+            Prose(text = "An annotation is written as @Name or @Name(\"argument\") immediately before the declaration it modifies. Annotations may appear before any modifier keyword.")
+            CodeBlock(
+                code = """@AnnotationName
+fun myFunction() { }
+
+@AnnotationName("argument")
+class MyClass { }
+
+// Multiple annotations
+@Nuked("Replaced by v2")
+@SomeOther
+val legacyConfig = loadLegacy()""")
+        }
+
+        DocSection(title = "@Nuked — Deprecation") {
+            Prose(text = "@Nuked marks a declaration as deprecated. The compiler emits a W0004 warning at every call site that references the annotated declaration. The string argument is the deprecation message shown to the developer.")
+            CodeBlock(
+                code = """@Nuked("Use fetchUserById() instead")
+suspend fun getUser(id: Int): User {
+    return api.get("/users/${'$'}id").body()
+}
+
+// ↑ Every call site sees:
+// W0004: 'getUser' is @Nuked: Use fetchUserById() instead
+
+suspend fun fetchUserById(id: Int): User {
+    return api.get("/users/${'$'}id").body()
+}""")
+            Callout(
+                kind    = "tip",
+                message = "Always provide a deprecation message that explains what the replacement is. A message like \"Deprecated\" without a migration path is unhelpful to developers consuming your code.")
+        }
+
+        DocSection(title = "Custom Annotations") {
+            Prose(text = "You may annotate declarations with any @Name that is not a known built-in. The compiler passes unknown annotations through to the generated output as JSDoc comments and does not process them further.")
+            CodeBlock(
+                code = """// Custom annotation — compiler ignores it but passes it through
+@Experimental
+fun newFeature(): String = "unstable"
+
+// Custom annotation with argument — same behaviour
+@Since("2.0")
+fun stableApi(): String = "stable"
+""")
+            Callout(
+                kind    = "note",
+                message = "Custom annotations are not yet validated by the compiler. The annotation name and arguments are emitted as JSDoc @annotations in the generated output for tooling to consume.")
+        }
+
+        DocSection(title = "Summary") {
+            DocTable(
+                headers = listOf("Annotation", "Effect"),
+                rows = listOf(
+                    TableRow("@Nuked(\"reason\")",  "Marks the declaration deprecated. W0004 emitted at every call site."),
+                    TableRow("@<Custom>(…)",        "Passed through to generated output as a JSDoc comment. No compiler processing.")
+                ))
+        }
+
+        PageNav(
+            prevLabel  = "Error Codes",
+            prevPage   = "error-codes",
+            nextLabel  = "Known Issues",
+            nextPage   = "known-issues",
+            onNavigate = onNavigate)
+    }
+}

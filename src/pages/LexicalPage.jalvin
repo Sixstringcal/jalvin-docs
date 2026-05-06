@@ -1,0 +1,133 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// LexicalPage.jalvin — Comments, identifiers, keywords, literals, ASI
+// ─────────────────────────────────────────────────────────────────────────────
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.DocSubSection
+import src.components.DocComponents.Callout
+import src.components.DocComponents.PageNav
+
+component fun LexicalPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Lexical Structure",
+        subtitle = "How the compiler tokenises source text: comments, identifiers, keywords, literals, and automatic semicolon insertion.") {
+
+        DocSection(title = "Comments") {
+            Prose(text = "Jalvin supports both single-line and block comments. Block comments may be nested.")
+            CodeBlock(
+                code = """// single-line comment
+
+/* multi-line comment
+   spanning several lines */
+
+/* outer /* nested inner */ still comment */""")
+        }
+
+        DocSection(title = "Identifiers") {
+            Prose(text = "An identifier starts with a letter or underscore and is followed by any number of letters, digits, or underscores:")
+            CodeBlock(code = "identifier = [a-zA-Z_][a-zA-Z0-9_]*")
+            Prose(text = "Identifiers are case-sensitive. myVar and MyVar are two distinct names.")
+        }
+
+        DocSection(title = "Keywords") {
+            Prose(text = "The following words are reserved and cannot be used as identifiers:")
+            CodeBlock(
+                code = """fun       component  class     data      sealed    enum      interface
+object    val        var       if        else      when
+for       while      do        return    break     continue
+throw     try        catch     finally   in        !in
+is        !is        as        as?       null      true
+false     this       super     import    package   typealias
+abstract  override   open      final     private   protected
+internal  suspend    launch    async     await     by
+init      const      lateinit  operator  infix     inline
+reified   tailrec    external""")
+        }
+
+        DocSection(title = "Literals") {
+            DocSubSection(title = "Numeric literals") {
+                CodeBlock(
+                    code = """// Integer (decimal, hex, binary) — underscores allowed for readability
+val a: Int  = 1_000_000
+val b: Int  = 0xFF
+val c: Int  = 0b1010_1010
+
+// Long
+val d: Long = 9_007_199_254_740_991L
+
+// Double (default floating-point type)
+val e: Double = 3.14159
+
+// Float
+val f: Float = 2.71f""")
+            }
+            DocSubSection(title = "Boolean and null") {
+                CodeBlock(
+                    code = """val flag: Boolean = true
+val empty: String? = null""")
+            }
+            DocSubSection(title = "String literals") {
+                CodeBlock(
+                    code = """// Regular string (escape sequences apply)
+val greeting = "Hello, World!\n"
+
+// Raw / multi-line string (triple quotes, no escaping)
+val block = ${"\"\"\""}
+    SELECT *
+    FROM users
+    WHERE active = true
+${"\"\"\""}.trimIndent()""")
+            }
+            DocSubSection(title = "String templates") {
+                Prose(text = "Embed expressions directly inside string literals:")
+                CodeBlock(
+                    code = """val name = "Alice"
+val age  = 30
+
+// Simple identifier interpolation
+println("Hello, ${'$'}name!")
+
+// Arbitrary expression interpolation
+println("Next year you will be ${'$'}{age + 1}.")
+
+// Nested calls are fine
+println("Upper: ${'$'}{name.uppercase()}")""")
+            }
+        }
+
+        DocSection(title = "Automatic Semicolon Insertion (ASI)") {
+            Prose(text = "Jalvin inserts a synthetic semicolon at the end of a line when the last token on that line is any of:")
+            CodeBlock(
+                code = """identifier
+integer literal  float literal  string literal
+true  false  null  this  super
+)  ]  }  ++  --  !!""")
+            Prose(text = "This means most statements do not require an explicit semicolon. Semicolons are only needed when placing two statements on the same line:")
+            CodeBlock(
+                code = """val x = 1; val y = 2   // two statements, one line — semicolon required
+
+val z = 1             // normal: no semicolon needed""")
+            Callout(
+                kind    = "warning",
+                message = "Be careful with method chains that span multiple lines. Start the continuation line with the operator (e.g. .) rather than ending the previous line with it, to prevent unintended semicolon insertion.")
+            CodeBlock(
+                code = """// GOOD — operator at the start of the continuation line
+val result = someList
+    .filter { it > 0 }
+    .map { it * 2 }
+
+// BAD — trailing dot triggers ASI, compiler sees two statements
+val result = someList.
+    filter { it > 0 }  // parse error""")
+        }
+
+        PageNav(
+            prevLabel  = "Project Structure",
+            prevPage   = "project-structure",
+            nextLabel  = "Types",
+            nextPage   = "types",
+            onNavigate = onNavigate)
+    }
+}

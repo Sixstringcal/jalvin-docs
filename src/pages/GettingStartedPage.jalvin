@@ -1,0 +1,153 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// GettingStartedPage.jalvin — Installation, CLI, and first project
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+
+component fun GettingStartedPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Getting Started",
+        subtitle = "Install the CLI, create your first project, and run it in under five minutes.") {
+
+        DocSection(title = "Installation") {
+            Prose(text = "Install the Jalvin CLI globally:")
+            CodeBlock(code = "npm install -g @jalvin/cli")
+            Prose(text = "Or add it as a project-local dev dependency:")
+            CodeBlock(code = """npm install --save-dev @jalvin/cli
+npm install @jalvin/runtime""")
+        }
+
+        DocSection(title = "Creating a New Project") {
+            Prose(text = "Use jalvin init to scaffold a project:")
+            CodeBlock(code = """jalvin init my-app
+cd my-app
+npm install""")
+            Prose(text = "The scaffold creates the following structure:")
+            CodeBlock(
+                label = "generated layout",
+                code = """my-app/
+├── JALVIN                 ← project configuration (no extension, all caps)
+├── src/
+│   ├── main.jalvin
+│   └── components/
+│       └── App.jalvin
+└── package.json""")
+        }
+
+        DocSection(title = "Running Your App") {
+            Prose(text = "Start the development server (live reload enabled):")
+            CodeBlock(code = "jalvin run src/main.jalvin")
+            Prose(text = "The jalvin run command compiles and serves the entry file with hot-module replacement. The terminal shows compile errors as you type.")
+        }
+
+        DocSection(title = "Building for Production") {
+            Prose(text = "Compile the entire src/ directory to dist/:")
+            CodeBlock(code = "jalvin build")
+            Prose(text = "Compile a single file to a specified output directory:")
+            CodeBlock(code = "jalvin build src/App.jalvin --out dist/")
+            Prose(text = "Type-check without emitting any output:")
+            CodeBlock(code = "jalvin check")
+            Prose(text = "Print the compiler version:")
+            CodeBlock(code = "jalvin version")
+        }
+
+        DocSection(title = "Vite Integration") {
+            Prose(text = "For projects that already use Vite, add the plugin:")
+            CodeBlock(code = "npm install --save-dev @jalvin/vite-plugin")
+            Prose(text = "Then register it in your configuration file:")
+            CodeBlock(
+                label = "vite.config.ts",
+                code = """import { defineConfig } from "vite"
+import jalvin from "@jalvin/vite-plugin"
+
+export default defineConfig({
+  plugins: [
+    jalvin({
+      entry: {
+        file: "./src/App.jalvin",
+        component: "App",
+        title: "My Jalvin App",
+      },
+    }),
+  ],
+})""")
+            Prose(text = "Once registered, .jalvin files can be imported directly inside other modules.")
+        }
+
+        DocSection(title = "Webpack Integration") {
+            Prose(text = "Install the Webpack plugin:")
+            CodeBlock(code = "npm install --save-dev @jalvin/webpack-plugin")
+            Prose(text = "Register the loader in your Webpack configuration:")
+            CodeBlock(
+                label = "webpack.config.js",
+                code = """const JalvinPlugin = require("@jalvin/webpack-plugin")
+
+module.exports = {
+  plugins: [new JalvinPlugin()],
+}""")
+        }
+
+        DocSection(title = "Your First Component") {
+            Prose(text = "Edit src/main.jalvin to build your first interactive component:")
+            CodeBlock(
+                label = "src/main.jalvin",
+                code = """import @jalvin/runtime.*
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/ui.Text
+import @jalvin/ui.Button
+
+component fun Counter(initial: Int = 0) {
+    var count = mutableStateOf(initial)
+
+    return Column(spacing = 16) {
+        Text(
+            text = "Count: ${'$'}{count.value}",
+            style = TextStyle.headlineMedium)
+        Row(spacing = 8) {
+            Button(
+                text = "+",
+                onClick = { count.value++ })
+            Button(
+                text = "-",
+                onClick = { count.value-- })
+        }
+    }
+}
+
+fun main() {
+    println("App started")
+}""")
+            Callout(
+                kind    = "tip",
+                message = "Component functions must start with a capital letter. The compiler treats any fun declaration prefixed with component as a UI component and generates the appropriate typed props interface automatically.")
+        }
+
+        DocSection(title = "CLI Reference") {
+            DocTable(
+                headers = listOf("Command", "Description"),
+                rows = listOf(
+                    TableRow("jalvin init <name>",              "Scaffold a new project in a new directory"),
+                    TableRow("jalvin run <file>",               "Compile and serve a file with live reload"),
+                    TableRow("jalvin build",                    "Compile all files in rootDir to outDir"),
+                    TableRow("jalvin build <file> --out <dir>", "Compile a single file to a specific directory"),
+                    TableRow("jalvin check",                    "Type-check without emitting output"),
+                    TableRow("jalvin version",                  "Print the compiler version")
+                ))
+        }
+
+        PageNav(
+            prevLabel  = "Introduction",
+            prevPage   = "introduction",
+            nextLabel  = "Project Structure",
+            nextPage   = "project-structure",
+            onNavigate = onNavigate)
+    }
+}

@@ -1,0 +1,129 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Sidebar.jalvin — Navigation sidebar for the documentation site
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/ui.Column
+import @jalvin/ui.Box
+import @jalvin/ui.Card
+import @jalvin/ui.Text
+import @jalvin/ui.Divider
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import @jalvin/ui.TextStyle
+import src.components.DocTheme.DocColors
+
+data class NavItem(val id: String, val label: String)
+data class NavSection(val title: String, val items: List<NavItem>)
+
+val navSections: List<NavSection> = listOf(
+    NavSection(
+        title = "Overview",
+        items = listOf(
+            NavItem("introduction",      "Introduction"),
+            NavItem("getting-started",   "Getting Started"),
+            NavItem("project-structure", "Project Structure")
+        )
+    ),
+    NavSection(
+        title = "Language Reference",
+        items = listOf(
+            NavItem("lexical",      "Lexical Structure"),
+            NavItem("types",        "Types"),
+            NavItem("declarations", "Declarations"),
+            NavItem("control-flow", "Control Flow"),
+            NavItem("null-safety",  "Null Safety"),
+            NavItem("annotations",  "Annotations")
+        )
+    ),
+    NavSection(
+        title = "Async & State",
+        items = listOf(
+            NavItem("coroutines", "Coroutines"),
+            NavItem("state-mvvm", "State & MVVM"),
+            NavItem("bibi",       "Bibi HTTP Client")
+        )
+    ),
+    NavSection(
+        title = "UI",
+        items = listOf(
+            NavItem("ui-components", "UI Components")
+        )
+    ),
+    NavSection(
+        title = "Standard Library",
+        items = listOf(
+            NavItem("stdlib", "Collections & stdlib")
+        )
+    ),
+    NavSection(
+        title = "Diagnostics",
+        items = listOf(
+            NavItem("error-codes",  "Error Codes"),
+            NavItem("known-issues", "Known Issues")
+        )
+    )
+)
+
+component fun Sidebar(currentPage: String, onNavigate: (String) -> Unit) {
+    return Box(
+        modifier = Modifier
+            .width(240)
+            .fillMaxHeight()
+            .background(DocColors.navBg)
+            .paddingVertical(16)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            for (section in navSections) {
+                SidebarSection(
+                    section = section,
+                    currentPage = currentPage,
+                    onNavigate = onNavigate)
+            }
+        }
+    }
+}
+
+component fun SidebarSection(
+    section: NavSection,
+    currentPage: String,
+    onNavigate: (String) -> Unit
+) {
+    return Column(modifier = Modifier.fillMaxWidth().paddingBottom(8)) {
+        Box(modifier = Modifier.fillMaxWidth().paddingHorizontal(16).paddingVertical(6)) {
+            Text(
+                text = section.title.uppercase(),
+                style = TextStyle.labelSmall,
+                color = DocColors.mutedText)
+        }
+        for (item in section.items) {
+            SidebarItem(
+                item = item,
+                isActive = currentPage == item.id,
+                onNavigate = onNavigate)
+        }
+        Divider(
+            modifier = Modifier.fillMaxWidth().paddingHorizontal(16).paddingVertical(4),
+            color = DocColors.navBorder)
+    }
+}
+
+component fun SidebarItem(
+    item: NavItem,
+    isActive: Boolean,
+    onNavigate: (String) -> Unit
+) {
+    val bg: Color     = if (isActive) Color.PrimaryLight else "transparent"
+    val fg: Color     = if (isActive) Color.Primary      else Color.OnSurface
+    val weight: Any   = if (isActive) TextStyle.labelLarge else TextStyle.bodyMedium
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .paddingHorizontal(16)
+            .paddingVertical(8)
+            .background(bg)
+            .borderRadius(6),
+        elevation = 0,
+        onClick = { onNavigate(item.id) }) {
+        Text(text = item.label, style = weight, color = fg)
+    }
+}

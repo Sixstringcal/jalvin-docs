@@ -1,0 +1,33 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DocTheme.jalvin — Global theme wrapper and shared style constants
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/ui.Box
+import @jalvin/ui.Text
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+
+// Shared design tokens used across all documentation pages
+object DocColors {
+    val codeBg     = "#1e1e2e"
+    val codeText   = "#cdd6f4"
+    val accent     = Color.Primary
+    val navBg      = "#f8f9fa"
+    val navBorder  = Color.Outline
+    val pageBg     = "#ffffff"
+    val mutedText  = Color.OnSurfaceVariant
+    val headingColor = Color.OnSurface
+}
+
+object DocSpacing {
+    val pagePadding  = 40
+    val sectionGap   = 32
+    val blockGap     = 16
+    val codeRadius   = 8
+}
+
+component fun DocTheme(children: Any) {
+    return Box(
+        modifier = Modifier.fillMaxSize().background(DocColors.pageBg)) {
+        children
+    }
+}

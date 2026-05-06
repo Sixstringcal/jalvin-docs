@@ -1,0 +1,88 @@
+import @jalvin/runtime.mutableStateOf
+import @jalvin/ui.Scaffold
+import @jalvin/ui.TopBar
+import @jalvin/ui.Row
+import @jalvin/ui.Box
+import @jalvin/ui.Text
+import @jalvin/ui.Divider
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import @jalvin/ui.TextStyle
+
+import src.pages.IntroductionPage
+import src.pages.GettingStartedPage
+import src.pages.ProjectStructurePage
+import src.pages.LexicalPage
+import src.pages.TypesPage
+import src.pages.DeclarationsPage
+import src.pages.ControlFlowPage
+import src.pages.CoroutinesPage
+import src.pages.BibiPage
+import src.pages.StateMvvmPage
+import src.pages.UIComponentsPage
+import src.pages.StdLibPage
+import src.pages.NullSafetyPage
+import src.pages.ErrorCodesPage
+import src.pages.AnnotationsPage
+import src.pages.KnownIssuesPage
+import src.components.Sidebar
+import src.components.DocTheme.DocTheme
+
+component fun DocsApp() {
+    val currentPage = mutableStateOf("introduction")
+
+    val navigate = (page: String) => {
+        currentPage.value = page
+    }
+
+    DocTheme {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = TopBar(
+                title = "Jalvin Developer Docs",
+                navigationIcon = Box(
+                    modifier = Modifier.size(32).background(Color.Primary).borderRadius(6),
+                    contentAlignment = "center") {
+                    Text(text = "J", style = TextStyle.titleSmall, color = Color.OnPrimary)
+                })) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                Sidebar(currentPage = currentPage.value, onNavigate = navigate)
+                Divider(orientation = "vertical", modifier = Modifier.height(0))
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .flex(1)
+                        .padding(0)
+                        .background(Color.Background)) {
+                    PageContent(page = currentPage.value, onNavigate = navigate)
+                }
+            }
+        }
+    }
+}
+
+component fun PageContent(page: String, onNavigate: (String) -> Unit) {
+    when (page) {
+        "introduction"      -> IntroductionPage(onNavigate = onNavigate)
+        "getting-started"   -> GettingStartedPage(onNavigate = onNavigate)
+        "project-structure" -> ProjectStructurePage(onNavigate = onNavigate)
+        "lexical"           -> LexicalPage(onNavigate = onNavigate)
+        "types"             -> TypesPage(onNavigate = onNavigate)
+        "declarations"      -> DeclarationsPage(onNavigate = onNavigate)
+        "control-flow"      -> ControlFlowPage(onNavigate = onNavigate)
+        "coroutines"        -> CoroutinesPage(onNavigate = onNavigate)
+        "bibi"              -> BibiPage(onNavigate = onNavigate)
+        "state-mvvm"        -> StateMvvmPage(onNavigate = onNavigate)
+        "ui-components"     -> UIComponentsPage(onNavigate = onNavigate)
+        "stdlib"            -> StdLibPage(onNavigate = onNavigate)
+        "null-safety"       -> NullSafetyPage(onNavigate = onNavigate)
+        "error-codes"       -> ErrorCodesPage(onNavigate = onNavigate)
+        "annotations"       -> AnnotationsPage(onNavigate = onNavigate)
+        "known-issues"      -> KnownIssuesPage(onNavigate = onNavigate)
+        else                -> IntroductionPage(onNavigate = onNavigate)
+    }
+}
+
+fun main() {
+    println("Jalvin Developer Docs")
+}

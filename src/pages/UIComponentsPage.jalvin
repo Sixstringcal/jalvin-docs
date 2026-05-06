@@ -1,0 +1,341 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UIComponentsPage.jalvin — @jalvin/ui component reference
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+
+component fun UIComponentsPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "UI Components",
+        subtitle = "The @jalvin/ui component library — layout, typography, inputs, navigation, drawing, and theme.") {
+
+        DocSection(title = "Layout — Column") {
+            Prose(text = "Column stacks children vertically.")
+            CodeBlock(
+                code = """Column(
+    modifier            = Modifier.fillMaxWidth().padding(16),
+    spacing             = 8,
+    horizontalAlignment = "center"   // start | center | end
+) {
+    Text(text = "First")
+    Text(text = "Second")
+    Text(text = "Third")
+}""")
+        }
+
+        DocSection(title = "Layout — Row") {
+            Prose(text = "Row arranges children horizontally.")
+            CodeBlock(
+                code = """Row(
+    modifier              = Modifier.fillMaxWidth(),
+    spacing               = 12,
+    verticalAlignment     = "center",      // start | center | end
+    horizontalArrangement = "spaceBetween",// start | center | end | spaceBetween | spaceEvenly | spaceAround
+    wrap                  = true           // allow children to wrap to next line
+) {
+    Button(text = "A")
+    Button(text = "B")
+    Button(text = "C")
+}""")
+        }
+
+        DocSection(title = "Layout — Box") {
+            Prose(text = "Box overlays children on top of each other. Use contentAlignment to control where the children are positioned.")
+            CodeBlock(
+                code = """Box(
+    modifier         = Modifier.size(120).background(Color.Surface).borderRadius(8),
+    contentAlignment = "center"  // topStart | topCenter | topEnd
+                                 // centerStart | center | centerEnd
+                                 // bottomStart | bottomCenter | bottomEnd
+) {
+    Text(text = "Centred", style = TextStyle.bodyMedium)
+}""")
+        }
+
+        DocSection(title = "Modifier") {
+            Prose(text = "Modifier is a chainable builder that attaches layout and drawing properties to any component.")
+            DocTable(
+                headers = listOf("Method", "Description"),
+                rows = listOf(
+                    TableRow("fillMaxWidth()",          "Expand to full available width"),
+                    TableRow("fillMaxHeight()",         "Expand to full available height"),
+                    TableRow("fillMaxSize()",           "Expand to full available size"),
+                    TableRow("width(n)",                "Fixed width in dp"),
+                    TableRow("height(n)",               "Fixed height in dp"),
+                    TableRow("size(n)",                 "Fixed width and height in dp"),
+                    TableRow("weight(n)",               "Flexible weight in a Row or Column"),
+                    TableRow("padding(n)",              "Uniform padding in dp"),
+                    TableRow("paddingHorizontal(n)",    "Left and right padding"),
+                    TableRow("paddingVertical(n)",      "Top and bottom padding"),
+                    TableRow("paddingTop(n)",           "Top padding only"),
+                    TableRow("paddingBottom(n)",        "Bottom padding only"),
+                    TableRow("paddingStart(n)",         "Leading padding only"),
+                    TableRow("paddingEnd(n)",           "Trailing padding only"),
+                    TableRow("background(color)",       "Fill colour (hex string or Color constant)"),
+                    TableRow("borderRadius(n)",         "Corner radius in dp"),
+                    TableRow("border(width, color)",    "Outline border"),
+                    TableRow("shadow(elevation)",       "Drop shadow at given elevation"),
+                    TableRow("opacity(f)",              "Opacity from 0.0 (transparent) to 1.0 (opaque)"),
+                    TableRow("clip(shape)",             "Clip content to a shape")
+                ))
+        }
+
+        DocSection(title = "Text") {
+            CodeBlock(
+                code = """Text(
+    text     = "Hello, Jalvin!",
+    style    = TextStyle.bodyLarge,   // see TextStyle table below
+    color    = Color.OnSurface,
+    maxLines = 2,                     // truncate with ellipsis
+    modifier = Modifier.fillMaxWidth()
+)""")
+            DocTable(
+                headers = listOf("TextStyle", "Intended use"),
+                rows = listOf(
+                    TableRow("displayLarge / Medium / Small", "Hero headings"),
+                    TableRow("headlineLarge / Medium / Small","Page and section headings"),
+                    TableRow("titleLarge / Medium / Small",   "Card and list item titles"),
+                    TableRow("bodyLarge / Medium / Small",    "General body copy"),
+                    TableRow("labelLarge / Medium / Small",   "Compact labels, badges, captions"),
+                    TableRow("code",                          "Monospace code snippets")
+                ))
+        }
+
+        DocSection(title = "Button") {
+            CodeBlock(
+                code = """Button(
+    text          = "Save",
+    variant       = "filled",    // filled | outlined | text | tonal
+    enabled       = true,
+    onClick       = { saveData() },
+    leadingIcon   = Text(text = "💾", style = TextStyle.titleMedium),
+    trailingIcon  = null
+)""")
+        }
+
+        DocSection(title = "IconButton") {
+            CodeBlock(
+                code = """IconButton(
+    onClick = { toggleMenu() },
+    enabled = true) {
+    Text(text = "☰", style = TextStyle.titleLarge)
+}""")
+        }
+
+        DocSection(title = "Input") {
+            CodeBlock(
+                code = """val email = mutableStateOf("")
+
+Input(
+    value          = email.value,
+    onValueChange  = { email.value = it },
+    label          = "Email address",
+    placeholder    = "you@example.com",
+    type           = "email",    // text | email | password | number | search
+    supportingText = if (!email.value.contains("@")) "Enter a valid email" else "",
+    isError        = !email.value.contains("@") && email.value.isNotBlank(),
+    readOnly       = false,
+    enabled        = true
+)""")
+        }
+
+        DocSection(title = "TextArea") {
+            CodeBlock(
+                code = """val notes = mutableStateOf("")
+
+TextArea(
+    value         = notes.value,
+    onValueChange = { notes.value = it },
+    label         = "Notes",
+    placeholder   = "Enter your notes…",
+    minLines      = 3
+)""")
+        }
+
+        DocSection(title = "Checkbox") {
+            CodeBlock(
+                code = """val agreed = mutableStateOf(false)
+
+Checkbox(
+    checked        = agreed.value,
+    onCheckedChange = { agreed.value = it },
+    label          = "I agree to the terms",
+    supportingText = "Required to continue"
+)""")
+        }
+
+        DocSection(title = "Card") {
+            CodeBlock(
+                code = """// Elevated card
+Card(elevation = 2, modifier = Modifier.width(240)) {
+    Text(text = "Card content", style = TextStyle.bodyMedium)
+}
+
+// Outlined card
+Card(outlined = true, modifier = Modifier.fillMaxWidth()) {
+    Column(spacing = 8, modifier = Modifier.padding(16)) {
+        Text(text = "Title",   style = TextStyle.titleMedium)
+        Text(text = "Subtitle", style = TextStyle.bodySmall, color = Color.OnSurfaceVariant)
+    }
+}
+
+// Clickable card
+Card(
+    outlined = true,
+    onClick  = { handleCardClick() },
+    modifier = Modifier.fillMaxWidth()) {
+    Text(text = "Tap me", style = TextStyle.bodyMedium, modifier = Modifier.padding(16))
+}""")
+        }
+
+        DocSection(title = "Spacer & Divider") {
+            CodeBlock(
+                code = """// Fixed spacer
+Spacer(height = 16)
+Spacer(width  = 8)
+
+// Flexible spacer (pushes siblings apart in Row / Column)
+Row(modifier = Modifier.fillMaxWidth()) {
+    Text(text = "Left")
+    Spacer(weight = 1)   // fills all remaining space
+    Text(text = "Right")
+}
+
+// Horizontal divider
+Divider(
+    modifier  = Modifier.fillMaxWidth(),
+    color     = Color.Outline,
+    thickness = 1)
+
+// Vertical divider inside a Row
+Divider(
+    orientation = "vertical",
+    modifier    = Modifier.height(32),
+    color       = Color.Outline)""")
+        }
+
+        DocSection(title = "Image & AsyncImage") {
+            CodeBlock(
+                code = """// Synchronous image
+Image(
+    src          = "https://example.com/photo.jpg",
+    alt          = "A photo",
+    contentScale = "crop",   // fit | crop | fill | none
+    modifier     = Modifier.width(200).height(120).borderRadius(8))
+
+// Asynchronous image with placeholders
+AsyncImage(
+    src          = "https://example.com/avatar.jpg",
+    alt          = "User avatar",
+    contentScale = "crop",
+    modifier     = Modifier.size(64).borderRadius(32),
+    loadingPlaceholder = Box(
+        modifier         = Modifier.size(64).background(Color.SurfaceVariant).borderRadius(32),
+        contentAlignment = "center") {
+        Text(text = "…", style = TextStyle.bodySmall, color = Color.OnSurfaceVariant)
+    },
+    errorPlaceholder = Box(
+        modifier         = Modifier.size(64).background(Color.SurfaceVariant).borderRadius(32),
+        contentAlignment = "center") {
+        Text(text = "!", style = TextStyle.bodyLarge, color = Color.Error)
+    })""")
+        }
+
+        DocSection(title = "Canvas") {
+            Prose(text = "Canvas gives you a 2D drawing surface. The draw callback receives a 2D context and the canvas element, matching the standard 2D drawing API.")
+            CodeBlock(
+                code = """Canvas(
+    width    = 400,
+    height   = 200,
+    modifier = Modifier.fillMaxWidth().height(200).borderRadius(8),
+    draw     = (ctx, canvas) => {
+        // Clear
+        ctx.fillStyle = "#ffffff"
+        ctx.fillRect(0, 0, 400, 200)
+
+        // Draw a bezier curve
+        ctx.strokeStyle = "#1976d2"
+        ctx.lineWidth   = 3
+        ctx.beginPath()
+        ctx.moveTo(0, 100)
+        ctx.bezierCurveTo(100, 0, 300, 200, 400, 100)
+        ctx.stroke()
+
+        // Draw text
+        ctx.fillStyle = "#0d47a1"
+        ctx.font      = "bold 14px system-ui"
+        ctx.fillText("Jalvin Canvas", 12, 24)
+    })""")
+        }
+
+        DocSection(title = "Scaffold & TopBar") {
+            CodeBlock(
+                code = """Scaffold(
+    modifier            = Modifier.fillMaxSize(),
+    topBar              = TopBar(
+        title              = "My App",
+        navigationIcon     = IconButton(onClick = { openDrawer() }) {
+            Text(text = "☰", style = TextStyle.titleMedium)
+        },
+        actions            = Row(spacing = 4) {
+            IconButton(onClick = { openSearch() }) {
+                Text(text = "🔍", style = TextStyle.titleSmall)
+            }
+        }),
+    bottomBar           = Row(
+        modifier              = Modifier.fillMaxWidth().padding(8),
+        horizontalArrangement = "spaceEvenly") {
+        Button(text = "Home",    variant = "text")
+        Button(text = "Profile", variant = "text")
+    },
+    floatingActionButton = Button(
+        text     = "+",
+        variant  = "filled",
+        modifier = Modifier.size(56),
+        onClick  = { createNew() })) {
+    // Main content
+    Column(modifier = Modifier.fillMaxSize().padding(16)) {
+        Text(text = "Content area", style = TextStyle.bodyLarge)
+    }
+}""")
+        }
+
+        DocSection(title = "Color Palette") {
+            DocTable(
+                headers = listOf("Constant", "Usage"),
+                rows = listOf(
+                    TableRow("Color.Primary",        "Primary brand colour"),
+                    TableRow("Color.PrimaryLight",   "Light variant of the primary colour"),
+                    TableRow("Color.PrimaryDark",    "Dark variant of the primary colour"),
+                    TableRow("Color.OnPrimary",      "Content on top of primary surfaces"),
+                    TableRow("Color.Secondary",      "Secondary accent colour"),
+                    TableRow("Color.SecondaryLight", "Light secondary accent"),
+                    TableRow("Color.Surface",        "Card and sheet surfaces"),
+                    TableRow("Color.SurfaceVariant", "Alternate surface for lower emphasis"),
+                    TableRow("Color.Background",     "Page background"),
+                    TableRow("Color.OnSurface",      "Primary content on surface"),
+                    TableRow("Color.OnSurfaceVariant","Secondary content on surface"),
+                    TableRow("Color.Outline",        "Borders and dividers"),
+                    TableRow("Color.Success",        "Success / positive state"),
+                    TableRow("Color.SuccessLight",   "Light success tint"),
+                    TableRow("Color.Warning",        "Warning / caution state"),
+                    TableRow("Color.Error",          "Error / destructive state"),
+                    TableRow("Color.White",          "Pure white"),
+                    TableRow("Color.Black",          "Pure black")
+                ))
+        }
+
+        PageNav(
+            prevLabel  = "State & MVVM",
+            prevPage   = "state-mvvm",
+            nextLabel  = "Collections & stdlib",
+            nextPage   = "stdlib",
+            onNavigate = onNavigate)
+    }
+}

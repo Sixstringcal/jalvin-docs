@@ -1,0 +1,123 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// IntroductionPage.jalvin — Overview and language introduction
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/runtime.listOf
+import @jalvin/ui.Box
+import @jalvin/ui.Text
+import @jalvin/ui.Card
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import @jalvin/ui.TextStyle
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.BulletItem
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+import src.components.DocTheme.DocColors
+
+component fun IntroductionPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title = "Jalvin",
+        subtitle = "A statically-typed, multi-platform language that targets the web, Android, iOS, Wear OS, CarPlay, and any environment with a runtime.") {
+
+        DocSection(title = "What is Jalvin?") {
+            Prose(text = "Jalvin is a modern programming language designed for building UI-first, type-safe applications across every platform from a single codebase. It compiles to native output and provides first-class support for reactive UIs, structured concurrency, and safe null handling without the boilerplate.")
+            Prose(text = "At its core, Jalvin blends expressive, Kotlin-inspired syntax with seamless ecosystem interoperability and a powerful standard library. Whether you are writing a web frontend, a mobile screen, or a background service, Jalvin gives you one language and one set of idioms to learn.")
+        }
+
+        DocSection(title = "Hello, World") {
+            Prose(text = "The shortest complete Jalvin program:")
+            CodeBlock(
+                label = "main.jalvin",
+                code = """fun main() {
+    println("Hello, World!")
+}""")
+            Prose(text = "A UI component that renders a greeting:")
+            CodeBlock(
+                label = "Greeting.jalvin",
+                code = """component fun Greeting(name: String) {
+    return Column(spacing = 8) {
+        Text(text = "Hello, ${'$'}{name}!", style = TextStyle.headlineLarge)
+        Text(text = "Welcome to Jalvin.")
+    }
+}""")
+        }
+
+        DocSection(title = "Key Features") {
+            Column(modifier = Modifier.fillMaxWidth(), spacing = 12) {
+                FeatureCard(
+                    title = "component fun",
+                    description = "Declare UI components with ordinary function syntax. No annotations, no wrappers — just functions that return UI trees.")
+                FeatureCard(
+                    title = "Null safety",
+                    description = "Every type is non-null by default. Nullable variants are explicit (T?), and the compiler enforces safe access at every call site.")
+                FeatureCard(
+                    title = "Structured concurrency",
+                    description = "Coroutines via suspend fun, launch {}, and async {} model asynchronous work clearly, without callback chains.")
+                FeatureCard(
+                    title = "Bibi HTTP client",
+                    description = "A built-in, always-capitalised HTTP client for making network requests. Bibi handles serialisation, authentication headers, and error propagation.")
+                FeatureCard(
+                    title = "Sealed classes + when",
+                    description = "Model state machines and discriminated unions with sealed class. The compiler checks exhaustiveness on every when expression at compile time.")
+                FeatureCard(
+                    title = "Extension functions",
+                    description = "Add methods to any existing type without subclassing. Extension functions are a first-class language feature.")
+                FeatureCard(
+                    title = "MVVM + StateFlow",
+                    description = "MutableStateFlow, ViewModel, and reactive component hooks are built into the runtime — no external state management library required.")
+                FeatureCard(
+                    title = "npm interop",
+                    description = "Import any npm package directly. Drop .jalvin files into existing projects with the Vite or Webpack plugin.")
+            }
+        }
+
+        DocSection(title = "Design Philosophy") {
+            Prose(text = "Jalvin is built around three beliefs:")
+            Column(modifier = Modifier.fillMaxWidth(), spacing = 8) {
+                BulletItem(text = "Safety over convenience — the language should catch bugs at compile time wherever possible.")
+                BulletItem(text = "Explicit over implicit — behaviour should be readable at the call site, not hidden in magic.")
+                BulletItem(text = "One language, every surface — the same Jalvin code should run on web, mobile, and beyond without platform-specific forks.")
+            }
+        }
+
+        DocSection(title = "Packages") {
+            DocTable(
+                headers = listOf("Package", "Purpose"),
+                rows = listOf(
+                    TableRow("@jalvin/compiler", "Lexer, parser, type-checker, and code generator"),
+                    TableRow("@jalvin/runtime",  "Standard library: Bibi, coroutines, StateFlow, ViewModel, stdlib shims"),
+                    TableRow("@jalvin/cli",       "Command-line tool: build, check, run, init"),
+                    TableRow("@jalvin/ui",         "UI component library: layout, inputs, navigation"),
+                    TableRow("@jalvin/vite-plugin","Vite integration — import .jalvin files in a Vite project"),
+                    TableRow("@jalvin/webpack-plugin", "Webpack loader for .jalvin files")
+                ))
+        }
+
+        PageNav(
+            nextLabel  = "Getting Started",
+            nextPage   = "getting-started",
+            onNavigate = onNavigate)
+    }
+}
+
+component fun FeatureCard(title: String, description: String) {
+    return Card(elevation = 0, outlined = true, modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.padding(16), spacing = 16, verticalAlignment = "start") {
+            Box(
+                modifier = Modifier.size(8).background(Color.Primary).borderRadius(4),
+                contentAlignment = "center") {}
+            Column(modifier = Modifier.Default.flex(1), spacing = 4) {
+                Text(text = title, style = TextStyle.titleSmall, color = Color.OnSurface)
+                Text(text = description, style = TextStyle.bodyMedium, color = DocColors.mutedText)
+            }
+        }
+    }
+}
+
+

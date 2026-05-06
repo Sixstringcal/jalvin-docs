@@ -1,0 +1,267 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DeclarationsPage.jalvin — Functions, classes, objects, enums, extensions …
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/ui.Text
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import @jalvin/ui.TextStyle
+import @jalvin/ui.AsyncImage
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+
+component fun DeclarationsPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Declarations",
+        subtitle = "Functions, component functions, properties, classes, objects, sealed classes, enums, extension functions, and more.") {
+
+        DocSection(title = "Functions") {
+            Prose(text = "Declare a function with the fun keyword. Parameters have a name: Type signature, and the return type follows the closing parenthesis:")
+            CodeBlock(
+                code = """fun greet(name: String): String = "Hello, ${'$'}name!"
+
+// Block body
+fun add(a: Int, b: Int): Int {
+    return a + b
+}
+
+// Default parameter values
+fun createUser(name: String, role: String = "viewer"): User {
+    return User(name = name, role = role)
+}
+
+// Named arguments at the call site — any order
+val u = createUser(role = "admin", name = "Alice")""")
+            Callout(
+                kind    = "tip",
+                message = "Prefer expression bodies (= expr) for single-expression functions. They are more concise and the return type can usually be inferred.")
+        }
+
+        DocSection(title = "Suspend Functions") {
+            Prose(text = "Mark a function with suspend to allow it to call other suspend functions and use coroutine primitives. A suspend fun may only be called from another suspend context or from launch {} / async {}.")
+            CodeBlock(
+                code = """suspend fun loadUser(id: Int): User {
+    delay(200)   // suspend for 200 ms without blocking
+    return Bibi("https://api.example.com").get("/users/${'$'}id").body()
+}""")
+        }
+
+        DocSection(title = "Component Functions") {
+            Prose(text = "Prefix fun with component to declare a UI component. The function may accept any typed parameters and must return a UI element. The compiler automatically generates a typed props interface from the parameter list.")
+            CodeBlock(
+                code = """component fun UserCard(name: String, email: String, avatar: String? = null) {
+    return Row(spacing = 12, verticalAlignment = "center") {
+        if (avatar != null) {
+            AsyncImage(src = avatar, alt = name, modifier = Modifier.size(40).borderRadius(20))
+        }
+        Column(spacing = 4) {
+            Text(text = name,  style = TextStyle.titleMedium)
+            Text(text = email, style = TextStyle.bodySmall, color = Color.OnSurfaceVariant)
+        }
+    }
+}""")
+            Callout(
+                kind    = "note",
+                message = "Component function names must be PascalCase. Using a lowercase name is a compile-time error.")
+        }
+
+        DocSection(title = "Properties") {
+            CodeBlock(
+                code = """val name: String = "Jalvin"     // immutable (read-only after assignment)
+var count: Int  = 0              // mutable
+
+const val MAX: Int = 1024        // compile-time constant
+
+// Late-initialized var — initializer not required at declaration
+lateinit var database: Database
+// Access before assignment throws E0212
+
+// Delegated properties
+val config by lazy { loadConfig() }                  // computed on first access
+var observed by Delegates.observable(0) { _, old, new ->
+    println("Changed ${'$'}old → ${'$'}new")
+}""")
+        }
+
+        DocSection(title = "Classes") {
+            Prose(text = "Classes combine state and behaviour. Primary constructor parameters marked val or var automatically become properties.")
+            CodeBlock(
+                code = """class Greeter(val name: String) {
+    fun greet(): String = "Hello, ${'$'}name!"
+}
+
+val g = Greeter("Alice")
+println(g.greet())   // Hello, Alice!""")
+            Prose(text = "Use the open modifier to allow subclassing. By default, top-level classes are open. Use final to prevent extension:")
+            CodeBlock(
+                code = """open class Animal(val species: String) {
+    open fun sound(): String = "..."
+}
+
+class Dog : Animal("Canis lupus familiaris") {
+    override fun sound() = "Woof"
+}
+
+final class Config(val host: String, val port: Int)
+// Subclassing Config is a compile error""")
+        }
+
+        DocSection(title = "Data Classes") {
+            Prose(text = "A data class automatically generates copy(), equals(), toString(), and hashCode() from its primary constructor parameters.")
+            CodeBlock(
+                code = """data class User(val id: Int, val name: String, val email: String?)
+
+val alice = User(1, "Alice", null)
+val alice2 = alice.copy(email = "alice@example.com")
+
+println(alice)           // User(id=1, name=Alice, email=null)
+println(alice == alice2) // false — email differs""")
+        }
+
+        DocSection(title = "Sealed Classes") {
+            Prose(text = "A sealed class restricts which classes may extend it. All direct subclasses must appear inside the same file. This enables exhaustive when expressions at compile time.")
+            CodeBlock(
+                code = """sealed class ApiResult<out T> {
+    data class Success<T>(val data: T)        : ApiResult<T>()
+    data class Error(val message: String)     : ApiResult<Nothing>()
+    object Loading                            : ApiResult<Nothing>()
+}
+
+fun handle(result: ApiResult<User>) = when (result) {
+    is ApiResult.Success -> showData(result.data)
+    is ApiResult.Error   -> showError(result.message)
+    is ApiResult.Loading -> showSpinner()
+    // no else needed — all cases covered
+}""")
+        }
+
+        DocSection(title = "Interfaces") {
+            CodeBlock(
+                code = """interface Drawable {
+    fun draw(): Unit
+    val width: Int
+    val height: Int
+}
+
+class Circle(override val width: Int, override val height: Int) : Drawable {
+    override fun draw() = println("Drawing circle ${'$'}{width}x${'$'}{height}")
+}""")
+        }
+
+        DocSection(title = "Objects (Singletons)") {
+            Prose(text = "An object declaration creates a singleton. The single instance is created on first access and shared across the entire program.")
+            CodeBlock(
+                code = """object Logger {
+    fun log(msg: String) = println("[LOG] ${'$'}msg")
+    fun warn(msg: String) = println("[WARN] ${'$'}msg")
+}
+
+Logger.log("App started")""")
+        }
+
+        DocSection(title = "Companion Objects") {
+            Prose(text = "A companion object provides factory methods and constants that belong to the class rather than an instance:")
+            CodeBlock(
+                code = """class User private constructor(val id: String, val name: String) {
+    companion object {
+        fun create(id: String, name: String): User = User(id, name)
+        val ANONYMOUS: User = User("0", "Anonymous")
+    }
+}
+
+val u = User.create("42", "Alice")""")
+        }
+
+        DocSection(title = "Enum Classes") {
+            CodeBlock(
+                code = """enum class Direction { NORTH, SOUTH, EAST, WEST }
+
+// Enum with constructor parameters
+enum class Planet(val mass: Double, val radius: Double) {
+    MERCURY(3.303e+23, 2.4397e6),
+    VENUS(4.869e+24,   6.0518e6),
+    EARTH(5.976e+24,   6.37814e6)
+}
+
+// Auto-generated helpers
+val all: Array<Direction> = Direction.values()
+val north: Direction      = Direction.valueOf("NORTH")""")
+            Callout(
+                kind    = "note",
+                message = "when on an enum class is exhaustiveness-checked: all entries must be covered or an else branch must be present (E0300). For more complex discriminated unions, prefer sealed class.")
+        }
+
+        DocSection(title = "Extension Functions") {
+            Prose(text = "Add methods to any type — including types from external libraries — without subclassing or modifying the original class.")
+            CodeBlock(
+                code = """fun String.isPalindrome(): Boolean = this == this.reversed()
+fun List<Int>.product(): Int   = fold(1) { acc, n -> acc * n }
+fun Int.clamp(min: Int, max: Int): Int = coerceIn(min, max)
+
+println("racecar".isPalindrome())       // true
+println(listOf(2, 3, 4).product())      // 24
+println((-5).clamp(0, 100))             // 0""")
+        }
+
+        DocSection(title = "Destructuring Declarations") {
+            CodeBlock(
+                code = """data class Point(val x: Int, val y: Int)
+
+val (x, y)     = Point(3, 4)
+val (_, value) = Pair("key", 42)   // _ discards the first slot
+
+// Works with Map entries too
+for ((key, value) in myMap) {
+    println("${'$'}key = ${'$'}value")
+}
+
+// withIndex in a for loop
+for ((index, item) in list.withIndex()) {
+    println("[${'$'}index] ${'$'}item")
+}""")
+        }
+
+        DocSection(title = "Scope Functions") {
+            DocTable(
+                headers = listOf("Function", "Receiver", "Returns", "Typical use"),
+                rows = listOf(
+                    TableRow("let",        "it",   "Block result",   "Null-safe chain, local transform"),
+                    TableRow("run",        "this", "Block result",   "Object init + compute result"),
+                    TableRow("apply",      "this", "Original object","Builder pattern"),
+                    TableRow("also",       "it",   "Original object","Side effects (logging, debugging)"),
+                    TableRow("with",       "this", "Block result",   "Grouping calls on a single object"),
+                    TableRow("takeIf",     "this", "this or null",   "Conditional pass-through"),
+                    TableRow("takeUnless", "this", "this or null",   "Inverse conditional pass-through")
+                ))
+            CodeBlock(
+                code = """// let — null-safe transformation
+val result = maybeNull?.let { it.transform() } ?: default
+
+// apply — builder pattern
+val view = TextView().apply {
+    text     = "Hello"
+    textSize = 16.0
+}
+
+// also — side-effect without breaking the chain
+val processed = loadItems()
+    .also { println("Loaded ${'$'}{it.size} items") }
+    .filter { it.active }""")
+        }
+
+        PageNav(
+            prevLabel  = "Types",
+            prevPage   = "types",
+            nextLabel  = "Control Flow",
+            nextPage   = "control-flow",
+            onNavigate = onNavigate)
+    }
+}

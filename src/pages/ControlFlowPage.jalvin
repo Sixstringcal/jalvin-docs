@@ -1,0 +1,234 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ControlFlowPage.jalvin — if, when, for, while, try, lambdas
+// ─────────────────────────────────────────────────────────────────────────────
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
+import src.components.DocComponents.PageNav
+
+component fun ControlFlowPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Control Flow",
+        subtitle = "if/else, when, for, while, try/catch, lambdas, and higher-order functions.") {
+
+        DocSection(title = "if / else") {
+            Prose(text = "if is both a statement and an expression. When used as an expression, both branches must be present and must produce the same type.")
+            CodeBlock(
+                code = """// Expression — result assigned to a val
+val max = if (a > b) a else b
+
+// Statement
+if (x > 0) {
+    println("positive")
+} else if (x < 0) {
+    println("negative")
+} else {
+    println("zero")
+}
+
+// Multi-line expression body
+val label = if (score >= 90) {
+    "Excellent"
+} else if (score >= 70) {
+    "Good"
+} else {
+    "Needs improvement"
+}""")
+        }
+
+        DocSection(title = "when") {
+            Prose(text = "when is the pattern-matching expression. It replaces switch statements with a more powerful syntax that supports type checks, range checks, and arbitrary expressions as conditions.")
+            CodeBlock(
+                code = """// Type pattern matching
+when (shape) {
+    is Circle    -> println("Circle r=${'$'}{shape.radius}")
+    is Rectangle -> println("Rect ${'$'}{shape.w}x${'$'}{shape.h}")
+    else         -> println("Unknown")
+}
+
+// Value matching (used as expression)
+val label = when (statusCode) {
+    200        -> "OK"
+    404        -> "Not Found"
+    in 500..599 -> "Server Error"
+    else       -> "Unknown (${'$'}statusCode)"
+}
+
+// Range matching
+val grade = when (score) {
+    in 90..100 -> "A"
+    in 80..89  -> "B"
+    in 70..79  -> "C"
+    else       -> "F"
+}
+
+// Without a subject — acts like a chain of if/else if
+val description = when {
+    x < 0    -> "negative"
+    x == 0   -> "zero"
+    else     -> "positive"
+}""")
+            Callout(
+                kind    = "note",
+                message = "when on a sealed class is exhaustiveness-checked at compile time. All branches must be covered or an else branch must be present. The compiler emits E0300 for non-exhaustive sealed class when expressions.")
+        }
+
+        DocSection(title = "for Loops") {
+            CodeBlock(
+                code = """// Iterate over a collection
+for (item in items) {
+    process(item)
+}
+
+// Inclusive integer range
+for (i in 0..9) { }
+
+// Exclusive range
+for (i in 0..<10) { }
+
+// Descending
+for (i in 10 downTo 1) { }
+
+// Custom step
+for (i in 0..100 step 5) { }
+
+// Destructure map entries
+for ((key, value) in configMap) { }
+
+// Index + value
+for ((index, item) in list.withIndex()) {
+    println("[${'$'}index] ${'$'}item")
+}""")
+        }
+
+        DocSection(title = "while / do-while") {
+            CodeBlock(
+                code = """// while — condition checked before each iteration
+while (queue.isNotEmpty()) {
+    val item = queue.removeFirst()
+    process(item)
+}
+
+// do-while — body executes at least once
+do {
+    val input = readLine()
+    process(input)
+} while (input != "quit")""")
+        }
+
+        DocSection(title = "break and continue") {
+            CodeBlock(
+                code = """// break — exit the nearest enclosing loop
+for (item in items) {
+    if (item.isTerminator) break
+    process(item)
+}
+
+// continue — skip to the next iteration
+for (n in 1..100) {
+    if (n % 2 == 0) continue
+    println(n)   // only odd numbers
+}""")
+        }
+
+        DocSection(title = "try / catch / finally") {
+            Prose(text = "try is both a statement and an expression:")
+            CodeBlock(
+                code = """// As a statement
+try {
+    riskyOperation()
+} catch (e: IOException) {
+    println("IO error: ${'$'}{e.message}")
+} catch (e: Exception) {
+    println("Unexpected: ${'$'}{e.message}")
+} finally {
+    cleanup()     // always runs
+}
+
+// As an expression
+val result: String? = try {
+    fetchData()
+} catch (e: Exception) {
+    null
+}""")
+        }
+
+        DocSection(title = "throw") {
+            CodeBlock(
+                code = """fun divide(a: Int, b: Int): Int {
+    if (b == 0) throw IllegalArgumentException("Division by zero")
+    return a / b
+}
+
+// throw is an expression of type Nothing — usable anywhere
+val name = input ?: throw IllegalStateException("Name must not be null")""")
+        }
+
+        DocSection(title = "Lambdas and Higher-Order Functions") {
+            Prose(text = "A lambda is an anonymous function literal. Lambdas are enclosed in braces and may capture variables from their enclosing scope.")
+            CodeBlock(
+                code = """// Explicit parameter and return type
+val multiply: (Int, Int) -> Int = { a, b -> a * b }
+
+// Implicit single parameter — available as 'it'
+val doubled = listOf(1, 2, 3).map { it * 2 }
+
+// Explicit parameter name
+val filtered = doubled.filter { x -> x > 2 }
+
+// Trailing lambda syntax — lambda passed outside parentheses
+val sum = listOf(1, 2, 3, 4, 5).fold(0) { acc, n -> acc + n }
+
+// Multi-statement lambda
+val process: (String) -> String = { raw ->
+    val trimmed = raw.trim()
+    trimmed.lowercase()
+}""")
+            Callout(
+                kind    = "tip",
+                message = "If the last parameter of a function is a function type, the lambda may be placed after the closing parenthesis. This is the trailing lambda syntax and is the idiomatic Jalvin style.")
+        }
+
+        DocSection(title = "Result<T> and runCatching") {
+            Prose(text = "runCatching wraps a block in a Result<T> that holds either a success value or a caught exception. This lets you handle errors without try/catch at every call site.")
+            CodeBlock(
+                code = """val result = runCatching { fetchUser(id) }
+
+// Handle success and failure
+result
+    .onSuccess { user -> showProfile(user) }
+    .onFailure { e   -> showError(e.message ?: "Unknown error") }
+
+// Extract the value safely
+val user: User? = result.getOrNull()
+val safe: User  = result.getOrDefault(anonymousUser)
+
+// Re-throw on failure
+val required: User = result.getOrThrow()
+
+// Transform the success value
+val name: Result<String> = result.map { it.name }
+
+// Recover from failure
+val recovered: Result<User> = result.recover { anonymousUser }
+
+// Fold to a single value
+val message: String = result.fold(
+    onSuccess = { "Welcome, ${'$'}{it.name}" },
+    onFailure = { "Login failed: ${'$'}it" }
+)
+
+// Async variant
+val asyncResult = runCatchingAsync { loadUserAsync(id) }""")
+        }
+
+        PageNav(
+            prevLabel  = "Declarations",
+            prevPage   = "declarations",
+            nextLabel  = "Coroutines",
+            nextPage   = "coroutines",
+            onNavigate = onNavigate)
+    }
+}

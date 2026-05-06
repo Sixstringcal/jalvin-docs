@@ -1,0 +1,244 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DocComponents.jalvin — Shared documentation UI primitives
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.*
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/ui.Box
+import @jalvin/ui.Text
+import @jalvin/ui.Divider
+import @jalvin/ui.Card
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import @jalvin/ui.Canvas
+import @jalvin/ui.TextStyle
+import src.components.DocTheme.DocSpacing
+import src.components.DocTheme.DocColors
+
+// ── Page wrapper ─────────────────────────────────────────────────────────────
+
+component fun DocPage(title: String, subtitle: String = "", children: Any) {
+    return Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(DocSpacing.pagePadding)
+            .background(DocColors.pageBg)) {
+        Column(modifier = Modifier.fillMaxWidth(), spacing = DocSpacing.sectionGap) {
+            Column(modifier = Modifier.fillMaxWidth(), spacing = 8) {
+                Text(text = title, style = TextStyle.displaySmall, color = DocColors.headingColor)
+                if (subtitle.isNotBlank()) {
+                    Text(text = subtitle, style = TextStyle.bodyLarge, color = DocColors.mutedText)
+                }
+                Divider(modifier = Modifier.fillMaxWidth().paddingTop(8), color = Color.Outline)
+            }
+            children
+        }
+    }
+}
+
+// ── Section heading ───────────────────────────────────────────────────────────
+
+component fun DocSection(title: String, children: Any) {
+    return Column(modifier = Modifier.fillMaxWidth(), spacing = DocSpacing.blockGap) {
+        Text(text = title, style = TextStyle.headlineMedium, color = DocColors.headingColor)
+        children
+    }
+}
+
+component fun DocSubSection(title: String, children: Any) {
+    return Column(modifier = Modifier.fillMaxWidth(), spacing = 12) {
+        Text(text = title, style = TextStyle.titleLarge, color = DocColors.headingColor)
+        children
+    }
+}
+
+// ── Prose text ────────────────────────────────────────────────────────────────
+
+component fun Prose(text: String) { return Text(text = text, style = TextStyle.bodyLarge, color = Color.OnSurface) }
+
+component fun ProseSmall(text: String) { return Text(text = text, style = TextStyle.bodyMedium, color = DocColors.mutedText) }
+
+// ── Code block ────────────────────────────────────────────────────────────────
+
+component fun CodeBlock(code: String, label: String = "") {
+    return Column(modifier = Modifier.fillMaxWidth(), spacing = 0) {
+        if (label.isNotBlank()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background("#2d2d44")
+                    .borderRadius(0)
+                    .paddingHorizontal(16)
+                    .paddingVertical(6)) {
+                Text(text = label, style = TextStyle.labelSmall, color = "#8888aa")
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(DocColors.codeBg)
+                .borderRadius(DocSpacing.codeRadius)
+                .padding(20)) {
+            Text(text = code, style = TextStyle.code, color = DocColors.codeText)
+        }
+    }
+}
+
+// ── Inline code ───────────────────────────────────────────────────────────────
+
+component fun InlineCode(text: String) {
+    return Box(
+        modifier = Modifier
+            .background("#e8eaf6")
+            .borderRadius(4)
+            .paddingHorizontal(6)
+            .paddingVertical(2)) {
+        Text(text = text, style = TextStyle.code, color = "#3949ab")
+    }
+}
+
+// ── Callout / note box ────────────────────────────────────────────────────────
+
+component fun Callout(kind: String = "note", message: String) {
+    val bg = when (kind) {
+        "tip"     -> "#e8f5e9"
+        "warning" -> "#fff3e0"
+        "danger"  -> "#ffebee"
+        else      -> "#e3f2fd"
+    }
+    val accent: Color = when (kind) {
+        "tip"     -> Color.Success
+        "warning" -> Color.Warning
+        "danger"  -> Color.Error
+        else      -> Color.Primary
+    }
+    val label = when (kind) {
+        "tip"     -> "TIP"
+        "warning" -> "WARNING"
+        "danger"  -> "DANGER"
+        else      -> "NOTE"
+    }
+    
+    // Non-expression body components still don't need 'return' in Jalvin
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(bg)
+            .borderRadius(DocSpacing.codeRadius)
+            .padding(16)) {
+        Row(spacing = 12, verticalAlignment = "start") {
+            Text(text = label, style = TextStyle.labelLarge, color = accent)
+            Text(text = message, style = TextStyle.bodyMedium, color = Color.OnSurface)
+        }
+    }
+}
+
+// ── Data table ────────────────────────────────────────────────────────────────
+
+data class TableRow(val col1: String, val col2: String, val col3: String = "")
+
+component fun DocTable(headers: List<String>, rows: List<TableRow>) {
+    return Card(elevation = 0, outlined = true, modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth(), spacing = 0) {
+            // Header row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(DocColors.navBg)
+                    .padding(12),
+                spacing = 0) {
+                for ((idx, header) in headers.withIndex()) {
+                    Box(modifier = Modifier.Default.flex(1)) {
+                        Text(text = header, style = TextStyle.labelLarge, color = DocColors.mutedText)
+                    }
+                }
+            }
+            Divider(modifier = Modifier.fillMaxWidth(), color = Color.Outline)
+            // Data rows
+            for ((rowIdx, row) in rows.withIndex()) {
+                val rowBg = if (rowIdx % 2 == 0) "#ffffff" else "#fafafa"
+                Row(
+                    modifier = Modifier.fillMaxWidth().background(rowBg).padding(12),
+                    spacing = 0) {
+                    Box(modifier = Modifier.Default.flex(1)) {
+                        Text(text = row.col1, style = TextStyle.code, color = "#3949ab")
+                    }
+                    Box(modifier = Modifier.Default.flex(1)) {
+                        Text(text = row.col2, style = TextStyle.bodyMedium, color = Color.OnSurface)
+                    }
+                    if (headers.size >= 3) {
+                        Box(modifier = Modifier.Default.flex(1)) {
+                            Text(text = row.col3, style = TextStyle.bodySmall, color = DocColors.mutedText)
+                        }
+                    }
+                }
+                if (rowIdx < rows.size - 1) {
+                    Divider(modifier = Modifier.fillMaxWidth(), color = "#f0f0f0")
+                }
+            }
+        }
+    }
+}
+
+// ── Bullet list item ──────────────────────────────────────────────────────────
+
+component fun BulletItem(text: String) {
+    return Row(spacing = 12, verticalAlignment = "start") {
+        Text(text = "•", style = TextStyle.bodyLarge, color = Color.Primary)
+        Text(text = text, style = TextStyle.bodyLarge, color = Color.OnSurface)
+    }
+}
+
+// ── Navigation footer ─────────────────────────────────────────────────────────
+
+component fun PageNav(
+    prevLabel: String = "",
+    prevPage: String  = "",
+    nextLabel: String = "",
+    nextPage: String  = "",
+    onNavigate: (String) -> Unit
+) {
+    return Row(
+        modifier = Modifier.fillMaxWidth().paddingTop(32),
+        spacing = 8,
+        horizontalArrangement = "spaceBetween") {
+        if (prevPage.isNotBlank()) {
+            Card(
+                modifier = Modifier
+                    .background(DocColors.navBg)
+                    .borderRadius(8)
+                    .padding(12),
+                elevation = 0,
+                onClick = { onNavigate(prevPage) }) {
+                Row(spacing = 8, verticalAlignment = "center") {
+                    Text(text = "←", style = TextStyle.bodyLarge, color = Color.Primary)
+                    Column(spacing = 2) {
+                        Text(text = "Previous", style = TextStyle.labelSmall, color = DocColors.mutedText)
+                        Text(text = prevLabel, style = TextStyle.titleSmall, color = Color.Primary)
+                    }
+                }
+            }
+        } else {
+            Box(modifier = Modifier.Default.flex(1))
+        }
+        if (nextPage.isNotBlank()) {
+            Card(
+                modifier = Modifier
+                    .background(DocColors.navBg)
+                    .borderRadius(8)
+                    .padding(12),
+                elevation = 0,
+                onClick = { onNavigate(nextPage) }) {
+                Row(spacing = 8, verticalAlignment = "center") {
+                    Column(spacing = 2, horizontalAlignment = "end") {
+                        Text(text = "Next", style = TextStyle.labelSmall, color = DocColors.mutedText)
+                        Text(text = nextLabel, style = TextStyle.titleSmall, color = Color.Primary)
+                    }
+                    Text(text = "→", style = TextStyle.bodyLarge, color = Color.Primary)
+                }
+            }
+        } else {
+            Box(modifier = Modifier.Default.flex(1))
+        }
+    }
+}

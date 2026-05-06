@@ -1,0 +1,5 @@
+name        = jalvin-docs
+version     = 1.0.0
+rootDir     = src
+outDir      = dist
+jsx         = true

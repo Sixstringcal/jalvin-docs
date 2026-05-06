@@ -1,0 +1,164 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CoroutinesPage.jalvin — suspend fun, launch, async, delay, scopes
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/ui.Column
+import @jalvin/ui.Modifier
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.BulletItem
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
+import src.components.DocComponents.PageNav
+
+component fun CoroutinesPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Coroutines",
+        subtitle = "Structured concurrency with suspend fun, launch, async, and coroutine scopes.") {
+
+        DocSection(title = "Overview") {
+            Prose(text = "Jalvin models asynchronous work with coroutines. A coroutine is a function that can suspend its execution at designated points without blocking the thread (or event loop) it runs on. When it resumes, it continues from exactly where it left off.")
+            Prose(text = "The two main concepts are:")
+            Column(modifier = Modifier.fillMaxWidth(), spacing = 8) {
+                BulletItem(text = "suspend fun — a function that may suspend. It compiles to an async function.")
+                BulletItem(text = "Coroutine builders — launch {} and async {} — which start a new coroutine from a non-suspend context.")
+            }
+        }
+
+        DocSection(title = "suspend fun") {
+            Prose(text = "Prefix any function with suspend to allow it to call other suspend functions and coroutine primitives. A suspend fun may only be invoked from another suspend context or from a coroutine builder.")
+            CodeBlock(
+                code = """suspend fun fetchUsers(): List<User> {
+    delay(100)   // suspend for 100 ms — does not block
+    return Bibi("https://api.example.com").get("/users").body()
+}
+
+// Calling another suspend function is natural
+suspend fun greetCurrentUser() {
+    val user = fetchUsers().first()
+    println("Hello, ${'$'}{user.name}")
+}""")
+            Callout(
+                kind    = "warning",
+                message = "Calling a suspend fun from a non-suspend context is a compile error (E0220). Use launch {} or async {} as the bridge.")
+        }
+
+        DocSection(title = "launch {}") {
+            Prose(text = "launch starts a new coroutine in a fire-and-forget style. The caller does not wait for it to finish. launch returns a Job that can be used to cancel the work.")
+            CodeBlock(
+                code = """// Fire and forget
+launch {
+    val report = generateReport()
+    saveReport(report)
+}
+
+// Cancellation
+val job = launch {
+    repeat(10) { i ->
+        delay(1_000)
+        println("tick ${'$'}i")
+    }
+}
+
+job.cancel()   // cancel the coroutine at any time""")
+        }
+
+        DocSection(title = "async {}") {
+            Prose(text = "async starts a coroutine that produces a result. It returns a Deferred<T>. Call .await() to suspend until the result is ready.")
+            CodeBlock(
+                code = """// Single async computation
+val deferred: Deferred<String> = async { heavyCompute() }
+val result: String = deferred.await()
+
+// Parallel execution — both start immediately, then wait for both
+val deferredA: Deferred<UserProfile> = async { fetchProfile(userId) }
+val deferredB: Deferred<List<Post>>  = async { fetchPosts(userId) }
+
+val profile: UserProfile = deferredA.await()
+val posts:   List<Post>  = deferredB.await()""")
+        }
+
+        DocSection(title = "delay") {
+            Prose(text = "delay suspends the current coroutine for the given number of milliseconds without blocking the underlying thread.")
+            CodeBlock(
+                code = """suspend fun pollEverySecond() {
+    repeat(60) { i ->
+        val status = fetchStatus()
+        println("${'$'}i: ${'$'}{status.message}")
+        delay(1_000)
+    }
+}""")
+        }
+
+        DocSection(title = "coroutineScope {}") {
+            Prose(text = "coroutineScope creates a child scope. The block suspends until all launched child coroutines complete. If any child fails, all siblings are cancelled and the exception propagates to the caller.")
+            CodeBlock(
+                code = """suspend fun fetchAll(ids: List<Int>): List<User> = coroutineScope {
+    ids.map { id -> async { fetchUser(id) } }
+       .map { it.await() }
+}""")
+        }
+
+        DocSection(title = "supervisorScope {}") {
+            Prose(text = "supervisorScope behaves like coroutineScope but with independent child failure — one child failing does not cancel its siblings.")
+            CodeBlock(
+                code = """suspend fun loadAll(): Results = supervisorScope {
+    val profileDeferred    = async { fetchProfile() }
+    val settingsDeferred   = async { fetchSettings() }
+    val notificationsDeferred = async { fetchNotifications() }
+
+    Results(
+        profile       = profileDeferred.getOrNull(),
+        settings      = settingsDeferred.getOrNull(),
+        notifications = notificationsDeferred.getOrNull()
+    )
+}""")
+        }
+
+        DocSection(title = "withContext") {
+            Prose(text = "withContext runs a block in a different coroutine context and suspends until the block completes. On JS targets all Dispatchers map to the same event loop — withContext is still useful for expressing intent.")
+            CodeBlock(
+                code = """val content: String = withContext(Dispatchers.IO) {
+    readFileContents("data.json")
+}""")
+        }
+
+        DocSection(title = "CoroutineScope") {
+            Prose(text = "Create a named scope to group related coroutines and cancel them all at once:")
+            CodeBlock(
+                code = """val scope = CoroutineScope()
+
+scope.launch {
+    while (true) {
+        refreshData()
+        delay(30_000)
+    }
+}
+
+// Later — cancel all coroutines in this scope
+scope.cancel()""")
+        }
+
+        DocSection(title = "Timing Utilities") {
+            CodeBlock(
+                code = """// Measure elapsed milliseconds
+val ms: Long = measureTimeMillis {
+    heavyComputation()
+}
+println("Took ${'$'}{ms}ms")
+
+// Measure time and capture the result
+val (result, duration) = measureTimedValue {
+    heavyComputation()
+}
+println("Result: ${'$'}result — Took ${'$'}{duration}ms")""")
+        }
+
+        PageNav(
+            prevLabel  = "Control Flow",
+            prevPage   = "control-flow",
+            nextLabel  = "Bibi HTTP Client",
+            nextPage   = "bibi",
+            onNavigate = onNavigate)
+    }
+}

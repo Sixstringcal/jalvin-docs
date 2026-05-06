@@ -1,0 +1,163 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// TypesPage.jalvin — Built-in types, nullable types, generics, function types
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/runtime.*
+import @jalvin/runtime.listOf
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/ui.Box
+import @jalvin/ui.Text
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import src.components.DocComponents.*
+import src.components.DocTheme.*
+
+component fun TypesPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Types",
+        subtitle = "Built-in types, nullable variants, generics, function types, and the type hierarchy.") {
+
+        DocSection(title = "Built-in Types") {
+            Prose(text = "Jalvin's built-in types map to familiar primitives:")
+            DocTable(
+                headers = listOf("Jalvin type", "Description"),
+                rows = listOf(
+                    TableRow("Int",     "32-bit signed integer"),
+                    TableRow("Long",    "64-bit integer (mapped to BigInt on JS targets)"),
+                    TableRow("Float",   "Single-precision floating-point"),
+                    TableRow("Double",  "Double-precision floating-point (default numeric literal type)"),
+                    TableRow("Boolean", "true or false"),
+                    TableRow("String",  "Immutable UTF-16 character sequence"),
+                    TableRow("Char",    "Single character"),
+                    TableRow("Unit",    "No meaningful return value (analogous to void)"),
+                    TableRow("Any",     "Root of the non-null type hierarchy"),
+                    TableRow("Nothing", "Bottom type — a function that returns Nothing never returns normally")
+                ))
+        }
+
+        DocSection(title = "Nullable Types") {
+            Prose(text = "Append ? to any type to make it nullable. The compiler prevents you from calling members on a nullable value without a safe-access operator.")
+            CodeBlock(
+                code = """val name: String  = "Alice"   // non-null: guaranteed to hold a String
+val nick: String? = null      // nullable: may be null
+
+// Safe member access — short-circuits to null if nick is null
+val upper: String? = nick?.uppercase()
+
+// Elvis operator — provide a fallback value
+val display: String = nick ?: "anonymous"
+
+// Non-null assertion — throws NullPointerException if nick is null
+val forced: String = nick!!
+
+// Safe cast — returns null if the cast fails instead of throwing
+val casted: String? = (someAny as? String)""")
+            Callout(
+                kind    = "note",
+                message = "The compiler emits E0210 if you call a member on a T? value without ?. and emits E0211 if you use !! on a value that is already non-null.")
+        }
+
+        DocSection(title = "Generic Types") {
+            Prose(text = "Jalvin ships a set of generic collection types out of the box:")
+            DocTable(
+                headers = listOf("Jalvin type", "Description"),
+                rows = listOf(
+                    TableRow("List<T>",          "Read-only ordered list"),
+                    TableRow("MutableList<T>",   "Mutable ordered list"),
+                    TableRow("Set<T>",           "Read-only set — no duplicate elements"),
+                    TableRow("MutableSet<T>",    "Mutable set"),
+                    TableRow("Map<K, V>",        "Read-only key-to-value mapping"),
+                    TableRow("MutableMap<K, V>", "Mutable key-to-value mapping"),
+                    TableRow("Deferred<T>",      "A future value resolved by an async {} block"),
+                    TableRow("StateFlow<T>",     "Observable reactive value from @jalvin/runtime")
+                ))
+            CodeBlock(
+                code = """val names: List<String>           = listOf("Alice", "Bob")
+val scores: MutableMap<String, Int> = mutableMapOf()
+scores["Alice"] = 99
+
+val future: Deferred<String> = async { fetchData() }
+val value: String            = future.await()""")
+        }
+
+        DocSection(title = "Function Types") {
+            Prose(text = "Functions are first-class values. A function type lists the parameter types followed by the return type:")
+            CodeBlock(
+                code = """// A function that takes Int and String, returns Boolean
+val check: (Int, String) -> Boolean = { n, s -> s.length == n }
+
+// A suspend function type
+val loader: suspend () -> Unit = { delay(100) }
+
+// Higher-order function accepting a callback
+fun transform(list: List<Int>, fn: (Int) -> Int): List<Int> = list.map(fn)
+
+val doubled = transform(listOf(1, 2, 3)) { it * 2 }""")
+        }
+
+        DocSection(title = "Type Aliases") {
+            Prose(text = "typealias introduces an alternative name for an existing type. It is purely a compile-time construct with no runtime overhead.")
+            CodeBlock(
+                code = """typealias UserId   = String
+typealias Handler<T> = (T) -> Unit
+typealias Matrix   = List<List<Double>>
+
+fun greetUser(id: UserId) {
+    println("Hello, user ${'$'}id")
+}""")
+        }
+
+        DocSection(title = "Smart Casts") {
+            Prose(text = "After a successful is check the compiler automatically narrows the type inside the guarded scope. No explicit cast is required:")
+            CodeBlock(
+                code = """fun describe(obj: Any): String {
+    return if (obj is String) {
+        obj.uppercase()    // obj narrowed to String — .uppercase() is safe
+    } else if (obj is Int) {
+        "Number: ${'$'}obj"   // obj narrowed to Int
+    } else {
+        obj.toString()
+    }
+}
+
+// Multiple narrowings combined with &&
+if (x is String && y is Int) {
+    println(x.length + y)   // both narrowed in the same block
+}""")
+            Callout(
+                kind    = "note",
+                message = "The negated form (!is) does not yet narrow the positive branch. Narrowing inside the else block of a !is check is not implemented.")
+        }
+
+        DocSection(title = "Ranges") {
+            DocTable(
+                headers = listOf("Expression", "Meaning"),
+                rows = listOf(
+                    TableRow("a..b",      "Inclusive range [a, b], step +1"),
+                    TableRow("a..<b",     "Exclusive range [a, b), step +1"),
+                    TableRow("a downTo b","Descending range [a, b], step -1"),
+                    TableRow("a until b", "Exclusive ascending range [a, b), step +1")
+                ))
+            CodeBlock(
+                code = """for (i in 1..10)       println(i)   // 1, 2 … 10
+for (i in 1..<10)      println(i)   // 1, 2 … 9
+for (i in 10 downTo 1) println(i)   // 10, 9 … 1
+for (i in 0..20 step 2) println(i)  // 0, 2, 4 … 20
+
+val r = 1..100
+r.contains(42)   // true
+r.first()        // 1
+r.last()         // 100
+r.count()        // 100
+r.toList()       // [1, 2, 3, …, 100]""")
+        }
+
+        PageNav(
+            prevLabel  = "Lexical Structure",
+            prevPage   = "lexical",
+            nextLabel  = "Declarations",
+            nextPage   = "declarations",
+            onNavigate = onNavigate)
+    }
+}

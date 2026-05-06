@@ -1,0 +1,222 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// StdLibPage.jalvin — Collections, strings, numerics, Regex, builders, Random
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/runtime.listOf
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.PageNav
+
+component fun StdLibPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Collections & Standard Library",
+        subtitle = "Collection transformations, aggregations, element access, string helpers, numerics, Regex, builders, and Random.") {
+
+        DocSection(title = "Collection Transformations") {
+            DocTable(
+                headers = listOf("Function", "Description"),
+                rows = listOf(
+                    TableRow("map { }",              "Transform each element, return new list"),
+                    TableRow("flatMap { }",          "Map then flatten one level"),
+                    TableRow("flatten()",            "Flatten a list-of-lists one level"),
+                    TableRow("filter { }",           "Keep elements matching a predicate"),
+                    TableRow("filterNotNull()",      "Remove null elements"),
+                    TableRow("groupBy { }",          "Partition elements into a Map<K, List<V>>"),
+                    TableRow("associate { }",        "Build a Map from key-value pairs"),
+                    TableRow("zip(other)",           "Zip two lists into a list of pairs"),
+                    TableRow("chunked(n)",           "Split into sub-lists of size n"),
+                    TableRow("windowed(n)",          "Sliding window of size n"),
+                    TableRow("partition { }",        "Split into two lists: matching and non-matching"),
+                    TableRow("withIndex()",          "Pair each element with its index"),
+                    TableRow("reversed()",           "Reverse the order"),
+                    TableRow("sortedBy { }",         "Sort ascending by a key"),
+                    TableRow("sortedByDescending { }","Sort descending by a key"),
+                    TableRow("distinct()",           "Remove duplicate elements"),
+                    TableRow("distinctBy { }",       "Remove duplicates by a key selector")
+                ))
+            CodeBlock(
+                code = """val names = listOf("Alice", "Bob", "Charlie", "Dave")
+
+val upper    = names.map { it.uppercase() }
+val long     = names.filter { it.length > 3 }
+val byLength = names.groupBy { it.length }
+val indexed  = names.withIndex().map { (i, v) -> "${'$'}i: ${'$'}v" }
+val sorted   = names.sortedBy { it }
+val unique   = listOf(1, 2, 2, 3, 3, 3).distinct()""")
+        }
+
+        DocSection(title = "Aggregations") {
+            DocTable(
+                headers = listOf("Function", "Description"),
+                rows = listOf(
+                    TableRow("fold(initial) { acc, it -> }","Reduce with an initial accumulator value"),
+                    TableRow("reduce { acc, it -> }",       "Reduce without initial; throws on empty list"),
+                    TableRow("sumOf { }",                   "Sum a numeric projection over all elements"),
+                    TableRow("minOf { }",                   "Minimum projection value"),
+                    TableRow("maxOf { }",                   "Maximum projection value"),
+                    TableRow("count { }",                   "Count elements matching a predicate"),
+                    TableRow("any { }",                     "True if any element matches"),
+                    TableRow("all { }",                     "True if all elements match"),
+                    TableRow("none { }",                    "True if no elements match"),
+                    TableRow("joinToString(sep)",           "Join elements to a String with a separator")
+                ))
+            CodeBlock(
+                code = """val scores = listOf(82, 91, 74, 88, 95)
+
+val total   = scores.fold(0) { acc, n -> acc + n }
+val average = scores.sumOf { it } / scores.size
+val passed  = scores.count { it >= 75 }
+val allPass = scores.all   { it >= 60 }
+val top     = scores.maxOf { it }
+val summary = scores.joinToString(separator = ", ")""")
+        }
+
+        DocSection(title = "Element Access") {
+            DocTable(
+                headers = listOf("Function", "Description"),
+                rows = listOf(
+                    TableRow("first()",              "First element; throws if empty"),
+                    TableRow("firstOrNull()",        "First element or null if empty"),
+                    TableRow("firstOrNull { }",      "First matching element or null"),
+                    TableRow("last()",               "Last element; throws if empty"),
+                    TableRow("lastOrNull()",         "Last element or null"),
+                    TableRow("find { }",             "First matching element or null"),
+                    TableRow("findLast { }",         "Last matching element or null"),
+                    TableRow("take(n)",              "First n elements"),
+                    TableRow("takeWhile { }",        "Elements while predicate holds"),
+                    TableRow("drop(n)",              "All elements except the first n"),
+                    TableRow("dropWhile { }",        "Skip elements while predicate holds"),
+                    TableRow("minOrNull()",          "Minimum element or null"),
+                    TableRow("maxOrNull()",          "Maximum element or null")
+                ))
+        }
+
+        DocSection(title = "Pairs and Triples") {
+            CodeBlock(
+                code = """val pair: Pair<String, Int>       = Pair("age", 30)
+val (key, value)                  = pair         // destructuring
+println(pair)                                    // (age, 30)
+
+val triple: Triple<Int, Int, Int> = Triple(1, 2, 3)
+val (a, b, c)                     = triple""")
+        }
+
+        DocSection(title = "String Helpers") {
+            CodeBlock(
+                code = """val s = "  Hello, World!  "
+
+s.trim()                  // "Hello, World!"
+s.trimStart()             // "Hello, World!  "
+s.trimEnd()               // "  Hello, World!"
+
+"x".repeat(3)             // "xxx"
+" ".isBlank()             // true
+"hi".isNotBlank()         // true
+"".isEmpty()              // true
+
+"123".toIntOrNull()       // 123
+"abc".toIntOrNull()       // null
+"3.14".toDoubleOrNull()   // 3.14
+
+// Multi-line strings — remove common indentation
+val query = ${"\"\"\""}
+    SELECT *
+    FROM users
+    WHERE active = true
+${"\"\"\""}.trimIndent()""")
+        }
+
+        DocSection(title = "Numeric Helpers") {
+            CodeBlock(
+                code = """val x = -5
+
+x.coerceAtLeast(0)        // max(x, 0)     → 0
+x.coerceAtMost(100)       // min(x, 100)   → -5
+x.coerceIn(0, 100)        // clamp         → 0
+
+Int.MAX_VALUE              // 2_147_483_647
+Long.MIN_VALUE             // -9_007_199_254_740_991""")
+        }
+
+        DocSection(title = "Regex") {
+            CodeBlock(
+                code = """val digits = Regex("[0-9]+")
+
+digits.matches("123")               // true — full match required
+digits.containsMatchIn("abc 42")    // true
+digits.find("hello 42 world")?.value  // "42"
+digits.findAll("1 2 3").map { it.value }  // ["1", "2", "3"]
+digits.replace("a1b2c3", "X")       // "aXbXcX"
+digits.split("a,b,,c", limit = 3)   // ["a", "b", ",c"]""")
+        }
+
+        DocSection(title = "String and Collection Builders") {
+            CodeBlock(
+                code = """// buildString — append to a StringBuilder
+val msg = buildString {
+    append("Hello, ")
+    append(name)
+    appendLine("!")
+    append("Today is May 4.")
+}
+
+// buildList — add to a list inside a block
+val evens = buildList<Int> {
+    for (i in 0..20) if (i % 2 == 0) add(i)
+}
+
+// buildSet
+val unique = buildSet<String> {
+    addAll(rawItems)
+    remove("duplicate")
+}
+
+// buildMap
+val config = buildMap<String, String> {
+    put("host", "localhost")
+    put("port", "8080")
+}""")
+        }
+
+        DocSection(title = "Random") {
+            CodeBlock(
+                code = """val rng = Random()
+
+rng.nextInt(10)           // random Int in [0, 10)
+rng.nextInt(1, 7)         // random Int in [1, 7)
+rng.nextDouble()          // random Double in [0.0, 1.0)
+rng.nextBoolean()         // random Boolean
+
+val id: String = randomUUID()   // RFC 4122 v4 UUID string""")
+        }
+
+        DocSection(title = "Structural Equality") {
+            DocTable(
+                headers = listOf("Operator", "Meaning"),
+                rows = listOf(
+                    TableRow("a == b",  "Structural equality — calls a.equals(b) if defined, then ==="),
+                    TableRow("a != b",  "!(a == b)"),
+                    TableRow("a === b", "Reference equality (identical object in memory)"),
+                    TableRow("a !== b", "!(a === b)")
+                ))
+            CodeBlock(
+                code = """data class Point(val x: Int, val y: Int)
+
+val p1 = Point(1, 2)
+val p2 = Point(1, 2)
+
+println(p1 == p2)    // true  — same contents
+println(p1 === p2)   // false — different references""")
+        }
+
+        PageNav(
+            prevLabel  = "UI Components",
+            prevPage   = "ui-components",
+            nextLabel  = "Null Safety",
+            nextPage   = "null-safety",
+            onNavigate = onNavigate)
+    }
+}

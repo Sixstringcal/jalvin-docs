@@ -1,0 +1,50 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// KnownIssuesPage.jalvin — Current compiler limitations and known issues
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/runtime.listOf
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.Callout
+import src.components.DocComponents.PageNav
+
+component fun KnownIssuesPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Known Issues",
+        subtitle = "Current limitations, known bugs, and workarounds for the Jalvin compiler and runtime.") {
+
+        DocSection(title = "Compiler Limitations") {
+            Prose(text = "The Jalvin compiler is currently in early preview. Several advanced language features are still being implemented or refined.")
+            
+            DocTable(
+                headers = listOf("Feature", "Status", "Workaround"),
+                rows = listOf(
+                    TableRow("Full Type Inference", "Partial", "Provide explicit types for complex lambda expressions."),
+                    TableRow("Reflective Access",    "Planned", "Avoid logic that depends on runtime class inspection."),
+                    TableRow("Circular Dependencies", "Limited", "Use interface-based decoupling to break cycles.")
+                ))
+        }
+
+        DocSection(title = "Runtime Issues") {
+            Prose(text = "The following issues are known to affect the runtime environment in specific browsers or Node.js versions.")
+            
+            Callout(
+                kind    = "warning",
+                message = "HMR (Hot Module Replacement) may occasionally fail to preserve state when modifying component function signatures. A full page reload is recommended after significant structural changes.")
+        }
+
+        DocSection(title = "Reporting Bugs") {
+            Prose(text = "If you encounter an issue not listed here, please report it via our internal bug tracking system or the /bug command in the Gemini CLI.")
+        }
+
+        PageNav(
+            prevLabel  = "Annotations",
+            prevPage   = "annotations",
+            nextLabel  = "Introduction",
+            nextPage   = "introduction",
+            onNavigate = onNavigate)
+    }
+}

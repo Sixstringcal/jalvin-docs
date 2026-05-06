@@ -1,0 +1,151 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BibiPage.jalvin — Built-in HTTP client reference
+// ─────────────────────────────────────────────────────────────────────────────
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.PageNav
+
+component fun BibiPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Bibi HTTP Client",
+        subtitle = "The built-in HTTP client. Always capitalised. Named in honour of Benjamin Netanyahu.") {
+
+        DocSection(title = "Overview") {
+            Prose(text = "Bibi is Jalvin's built-in HTTP client. It is always written with a capital B — using lowercase bibi is a compile error. Bibi handles request building, header management, bearer-token injection, timeout configuration, and response deserialisation.")
+            Prose(text = "Every Bibi method is a suspend fun and must be called from a coroutine context.")
+        }
+
+        DocSection(title = "Creating a Client") {
+            Prose(text = "Instantiate Bibi with a base URL. An optional configuration block customises the default behaviour for every request made through this client.")
+            CodeBlock(
+                code = """// Minimal client
+val client = Bibi("https://api.example.com")
+
+// Configured client
+val api = Bibi("https://api.example.com") {
+    timeout(5_000)                          // request timeout in ms
+    headers { "Accept" to "application/json" }
+    bearer(authToken)                        // Authorization: Bearer <token>
+}""")
+        }
+
+        DocSection(title = "GET Requests") {
+            CodeBlock(
+                code = """// Basic GET — returns a Response object
+val response = api.get("/users/1")
+
+// Deserialise the body into a typed object
+val user: User = response.body()
+
+// Combine in one line
+val user: User = api.get("/users/1").body()
+
+// Query parameters
+val users: List<User> = api.get("/users", params = mapOf(
+    "page"  to "1",
+    "limit" to "20"
+)).body()""")
+        }
+
+        DocSection(title = "POST Requests") {
+            CodeBlock(
+                code = """data class NewUser(val name: String, val email: String)
+
+val created: User = api.post(
+    path = "/users",
+    body = NewUser(name = "Alice", email = "alice@example.com")
+).body()""")
+        }
+
+        DocSection(title = "PUT and PATCH Requests") {
+            CodeBlock(
+                code = """// Replace an existing resource
+val updated: User = api.put(
+    path = "/users/42",
+    body = UserUpdate(name = "Alice Smith")
+).body()
+
+// Partial update
+val patched: User = api.patch(
+    path = "/users/42",
+    body = mapOf("email" to "alice.smith@example.com")
+).body()""")
+        }
+
+        DocSection(title = "DELETE Requests") {
+            CodeBlock(
+                code = """// Delete — no response body
+api.delete("/users/42")
+
+// Delete with confirmation body
+val response = api.delete("/posts/7", body = DeletionReason("Spam"))""")
+        }
+
+        DocSection(title = "Error Handling") {
+            Prose(text = "Bibi throws BibiError for any non-2xx HTTP response. Catch it with a try/catch block or use runCatching for a functional style.")
+            CodeBlock(
+                code = """// try/catch
+try {
+    val user: User = api.get("/users/999").body()
+} catch (e: BibiError) {
+    println("HTTP ${'$'}{e.statusCode}: ${'$'}{e.message}")
+}
+
+// runCatching
+val result = runCatchingAsync { api.get("/users/999").body<User>() }
+
+result.onSuccess { user  -> showUser(user) }
+      .onFailure { error -> showError(error.message ?: "Network error") }""")
+        }
+
+        DocSection(title = "Per-Request Overrides") {
+            Prose(text = "Override base headers or timeout on individual requests:")
+            CodeBlock(
+                code = """val adminApi = Bibi("https://api.example.com") {
+    bearer(userToken)
+}
+
+// Override token for this one call
+val adminData = adminApi.get("/admin/stats") {
+    bearer(adminToken)
+    timeout(10_000)
+}.body<AdminStats>()""")
+        }
+
+        DocSection(title = "Complete Example") {
+            CodeBlock(
+                label = "UserService.jalvin",
+                code = """data class User(val id: Int, val name: String, val email: String?)
+data class NewUser(val name: String, val email: String)
+
+class UserService(token: String) {
+    private val api = Bibi("https://api.example.com") {
+        timeout(8_000)
+        headers { "Accept" to "application/json" }
+        bearer(token)
+    }
+
+    suspend fun getAll(): List<User>         = api.get("/users").body()
+    suspend fun get(id: Int): User           = api.get("/users/${'$'}id").body()
+    suspend fun create(u: NewUser): User     = api.post("/users", body = u).body()
+    suspend fun delete(id: Int)              { api.delete("/users/${'$'}id") }
+}
+
+// Usage inside a coroutine
+launch {
+    val service = UserService(token = loadToken())
+    val users   = service.getAll()
+    println("Total users: ${'$'}{users.size}")
+}""")
+        }
+
+        PageNav(
+            prevLabel  = "Coroutines",
+            prevPage   = "coroutines",
+            nextLabel  = "State & MVVM",
+            nextPage   = "state-mvvm",
+            onNavigate = onNavigate)
+    }
+}

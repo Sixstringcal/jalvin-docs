@@ -1,0 +1,179 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// StateMvvmPage.jalvin — StateFlow, ViewModel, component hooks
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/ui.Column
+import @jalvin/ui.Row
+import @jalvin/ui.Text
+import @jalvin/ui.Modifier
+import @jalvin/ui.Color
+import @jalvin/ui.TextStyle
+import @jalvin/ui.Input
+import @jalvin/ui.Button
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+
+component fun StateMvvmPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "State & MVVM",
+        subtitle = "Reactive state with StateFlow, ViewModel lifecycle management, and component hooks.") {
+
+        DocSection(title = "MutableStateFlow") {
+            Prose(text = "MutableStateFlow is the primary reactive state primitive in Jalvin. It holds a current value and emits it to all subscribers whenever the value changes.")
+            CodeBlock(
+                code = """val count = MutableStateFlow(0)
+
+// Read the current value
+println(count.value)   // 0
+
+// Write a new value — all subscribers are notified
+count.value = 42
+
+// Update based on the current value (atomic-style helper)
+count.update { it + 1 }
+
+// Subscribe to changes
+val unsubscribe = count.collect { v ->
+    println("count changed to ${'$'}v")
+}
+
+// Unsubscribe when no longer needed
+unsubscribe()""")
+        }
+
+        DocSection(title = "StateFlow (read-only)") {
+            Prose(text = "Expose a MutableStateFlow as a read-only StateFlow to prevent external code from mutating state directly:")
+            CodeBlock(
+                code = """class CounterViewModel : ViewModel() {
+    private val _count = MutableStateFlow(0)
+    val count: StateFlow<Int> = _count   // read-only view
+
+    fun increment() { _count.update { it + 1 } }
+    fun decrement() { _count.update { it - 1 } }
+    fun reset()     { _count.value = 0 }
+}""")
+        }
+
+        DocSection(title = "ViewModel") {
+            Prose(text = "A ViewModel holds UI state and business logic that survives re-renders. It is created once per lifecycle boundary and cleared when that boundary is destroyed. Override onCleared() for cleanup.")
+            CodeBlock(
+                code = """class TodoViewModel : ViewModel() {
+    private val api = Bibi("https://api.example.com")
+
+    val items   = MutableStateFlow<List<Todo>>(emptyList())
+    val loading = MutableStateFlow(false)
+    val error   = MutableStateFlow<String?>(null)
+
+    suspend fun load() {
+        loading.value = true
+        error.value   = null
+        val result = runCatchingAsync { api.get("/todos").body<List<Todo>>() }
+        result
+            .onSuccess { items.value = it }
+            .onFailure { error.value = it.message }
+        loading.value = false
+    }
+
+    fun add(title: String) {
+        items.update { it + Todo(id = randomUUID(), title = title) }
+    }
+
+    fun remove(id: String) {
+        items.update { list -> list.filter { it.id != id } }
+    }
+
+    override fun onCleared() {
+        println("TodoViewModel cleared")
+    }
+}""")
+        }
+
+        DocSection(title = "Component Hooks") {
+            Prose(text = "When writing UI components that target reactive runtimes, Jalvin provides a set of built-in hooks:")
+            DocTable(
+                headers = listOf("Hook", "Description"),
+                rows = listOf(
+                    TableRow("mutableStateOf(initial)",      "Local component state — re-renders on change"),
+                    TableRow("remember { compute() }",       "Memoised value — re-computed only when dependencies change"),
+                    TableRow("collectAsState(flow)",         "Subscribe to a StateFlow; triggers re-render on emission"),
+                    TableRow("useViewModel(\"key\") { Vm() }","Get or create a ViewModel scoped to the component lifecycle"),
+                    TableRow("LaunchedEffect(deps) { }",     "Run a suspend block when the component mounts or deps change"),
+                    TableRow("DisposableEffect(deps) { cleanup }", "Run setup and cleanup logic tied to component lifetime"),
+                    TableRow("SideEffect { }",               "Run a non-suspend side effect after every successful render")
+                ))
+            CodeBlock(
+                code = """component fun TodoList() {
+    val vm         = useViewModel("todos") { TodoViewModel() }
+    val items      = collectAsState(vm.items)
+    val loading    = collectAsState(vm.loading)
+    val errorMsg   = collectAsState(vm.error)
+    val newTitle   = mutableStateOf("")
+
+    LaunchedEffect("load") {
+        vm.load()
+    }
+
+    return Column(spacing = 12) {
+        if (loading.value) {
+            Text(text = "Loading…", style = TextStyle.bodyMedium, color = Color.OnSurfaceVariant)
+        }
+        if (errorMsg.value != null) {
+            Text(text = "Error: ${'$'}{errorMsg.value}", style = TextStyle.bodyMedium, color = Color.Error)
+        }
+        for (todo in items.value) {
+            TodoItem(todo = todo, onRemove = { vm.remove(todo.id) })
+        }
+        Row(spacing = 8) {
+            Input(
+                value = newTitle.value,
+                onValueChange = { newTitle.value = it },
+                placeholder = "New todo…")
+            Button(
+                text    = "Add",
+                enabled = newTitle.value.isNotBlank(),
+                onClick = {
+                    vm.add(newTitle.value)
+                    newTitle.value = ""
+                })
+        }
+    }
+}""")
+        }
+
+        DocSection(title = "Local State with mutableStateOf") {
+            Prose(text = "For state that is purely local to a single component and does not need to be shared, mutableStateOf is the simplest approach:")
+            CodeBlock(
+                code = """component fun ExpandableCard(title: String, body: String) {
+    val expanded = mutableStateOf(false)
+
+    return Column(spacing = 0) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12),
+            onClick  = { expanded.value = !expanded.value }) {
+            Text(text = title,  style = TextStyle.titleMedium, modifier = Modifier.Default.flex(1))
+            Text(text = if (expanded.value) "▲" else "▼", style = TextStyle.bodyMedium)
+        }
+        if (expanded.value) {
+            Text(
+                text     = body,
+                style    = TextStyle.bodyMedium,
+                color    = Color.OnSurfaceVariant,
+                modifier = Modifier.padding(12))
+        }
+    }
+}""")
+        }
+
+        PageNav(
+            prevLabel  = "Bibi HTTP Client",
+            prevPage   = "bibi",
+            nextLabel  = "UI Components",
+            nextPage   = "ui-components",
+            onNavigate = onNavigate)
+    }
+}

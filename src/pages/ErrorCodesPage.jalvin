@@ -1,0 +1,143 @@
+import @jalvin/runtime.listOf
+import @jalvin/ui.Column
+import @jalvin/ui.Modifier
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.BulletItem
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.PageNav
+
+component fun ErrorCodesPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Error Codes",
+        subtitle = "Every compiler diagnostic, what triggers it, and how to fix it.") {
+
+        DocSection(title = "How to Read a Diagnostic") {
+            Prose(text = "When the Jalvin compiler encounters a problem it prints a diagnostic in this format:")
+            CodeBlock(
+                code = """src/App.jalvin:14:5 E0210 Unsafe null dereference - use ?. instead of .
+    val upper = name.uppercase()
+                ^^^^""")
+            Prose(text = "The prefix letter indicates severity:")
+            Column(modifier = Modifier.fillMaxWidth(), spacing = 6) {
+                BulletItem(text = "E - Error. Compilation stops; no output is emitted.")
+                BulletItem(text = "W - Warning. Compilation continues; output is still emitted.")
+            }
+        }
+
+        DocSection(title = "Lexical Errors (E0001-E0010)") {
+            DocTable(
+                headers = listOf("Code", "Message", "Cause"),
+                rows = listOf(
+                    TableRow("E0001", "Unterminated string literal",  "A string is opened with \" but never closed before the end of the line"),
+                    TableRow("E0002", "Unterminated block comment",   "A /* comment is never closed with */"),
+                    TableRow("E0010", "Unexpected character",         "A character that is not part of any valid token")
+                ))
+        }
+
+        DocSection(title = "Parse Errors (E0100-E0101)") {
+            DocTable(
+                headers = listOf("Code", "Message", "Cause"),
+                rows = listOf(
+                    TableRow("E0100", "Unexpected token",    "The parser encountered a token it did not expect in the current context"),
+                    TableRow("E0101", "Expected expression", "An expression was required but something else was found")
+                ))
+            CodeBlock(
+                code = """// E0100 example
+val x = ;         // ';' is not a valid expression
+
+// E0101 example
+fun bad(): Int {
+    return        // nothing after return - E0101
+}""")
+        }
+
+        DocSection(title = "Name and Type Errors (E0200-E0221)") {
+            DocTable(
+                headers = listOf("Code", "Message", "Cause and fix"),
+                rows = listOf(
+                    TableRow("E0200", "Undefined variable",         "A name is used that has not been declared. Check spelling and scope."),
+                    TableRow("E0201", "Type mismatch",              "The inferred or declared type does not match the expected type at this position."),
+                    TableRow("E0202", "Not callable",               "Calling a value that is not a function type."),
+                    TableRow("E0210", "Unsafe null dereference",    "Calling . on a T? without ?.. Replace with ?."),
+                    TableRow("E0211", "!! on non-nullable type",    "Using !! on a value that is already non-null. Remove the !!."),
+                    TableRow("E0212", "lateinit accessed before init", "Reading a lateinit var before it has been assigned."),
+                    TableRow("E0220", "suspend call outside suspend context", "Calling a suspend fun from a non-suspend function. Wrap in launch {} or async {}."),
+                    TableRow("E0221", "await outside async block",  "Calling .await() outside a suspend context.")
+                ))
+            CodeBlock(
+                code = """// E0201 - type mismatch
+val count: Int = "hello"   // String assigned to Int
+
+// E0210 - unsafe null dereference
+val name: String? = findName()
+val upper = name.uppercase()    // error - use name?.uppercase()
+
+// E0220 - suspend call outside context
+fun notSuspend() {
+    delay(100)  // error - must be in a suspend fun or launch {}
+}""")
+        }
+
+        DocSection(title = "Pattern Matching Errors (E0300-E0321)") {
+            DocTable(
+                headers = listOf("Code", "Message", "Cause and fix"),
+                rows = listOf(
+                    TableRow("E0300", "Non-exhaustive when on sealed class", "when on a sealed class does not cover all variants and has no else branch."),
+                    TableRow("E0310", "Duplicate when branch",               "Two branches in a when expression match the same condition."),
+                    TableRow("E0320", "Assignment to const val",             "Trying to reassign a const val after initialisation."),
+                    TableRow("E0321", "lateinit applied to non-var or primitive", "lateinit requires var and a non-primitive reference type.")
+                ))
+            CodeBlock(
+                code = """// E0300 - non-exhaustive when
+sealed class Shape { data class Circle(val r: Double) : Shape(); object Square : Shape() }
+
+fun area(s: Shape) = when (s) {
+    is Shape.Circle -> Math.PI * s.r * s.r
+    // E0300: Shape.Square is not covered - add a branch or else
+}
+
+// E0320 - assignment to const val
+const val MAX: Int = 100
+MAX = 200   // E0320""")
+        }
+
+        DocSection(title = "Warnings (W0001-W0004)") {
+            DocTable(
+                headers = listOf("Code", "Message", "Cause"),
+                rows = listOf(
+                    TableRow("W0001", "Unused variable",       "A declared variable is never read. Remove it or prefix with _ to suppress."),
+                    TableRow("W0002", "Unreachable code",      "Code appears after a return, throw, or infinite loop and can never execute."),
+                    TableRow("W0003", "Implicit Any type",     "A declaration is missing a type annotation and the compiler falls back to Any."),
+                    TableRow("W0004", "Deprecated API",        "A call site uses a declaration marked @Nuked.")
+                ))
+            CodeBlock(
+                code = """// W0001 - unused variable
+val result = compute()   // W0001 if result is never read
+
+// W0002 - unreachable code
+fun broken(): Int {
+    return 1
+    println("never")   // W0002
+}
+
+// W0003 - implicit Any
+val data = fetchRaw()   // W0003 if fetchRaw() returns Any and no annotation present
+
+// W0004 - deprecated API
+@Nuked("Use newApi() instead")
+fun oldApi(): String = "legacy"
+val x = oldApi()   // W0004: 'oldApi' is @Nuked: Use newApi() instead""")
+        }
+
+        PageNav(
+            prevLabel  = "Null Safety",
+            prevPage   = "null-safety",
+            nextLabel  = "Annotations",
+            nextPage   = "annotations",
+            onNavigate = onNavigate)
+    }
+}

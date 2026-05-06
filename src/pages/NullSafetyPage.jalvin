@@ -1,0 +1,139 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// NullSafetyPage.jalvin — T?, ?., ?:, !!, as?, smart casts
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import @jalvin/runtime.listOf
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.Callout
+import src.components.DocComponents.PageNav
+
+component fun NullSafetyPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Null Safety",
+        subtitle = "How Jalvin enforces null safety at compile time, and the operators used to work safely with nullable values.") {
+
+        DocSection(title = "Non-null by Default") {
+            Prose(text = "In Jalvin, every type is non-null unless you explicitly opt into nullability. This means the compiler guarantees that any value of type String will never be null at runtime.")
+            CodeBlock(
+                code = """val name: String  = "Alice"   // fine — always holds a String
+val nick: String  = null      // compile error: String is not nullable""")
+            Prose(text = "To allow null, append ? to the type:")
+            CodeBlock(
+                code = """val nick: String? = null      // allowed — String? is the nullable variant""")
+        }
+
+        DocSection(title = "Nullable Type Operators") {
+            DocTable(
+                headers = listOf("Syntax", "Meaning"),
+                rows = listOf(
+                    TableRow("T?",          "Nullable type — T or null"),
+                    TableRow("value?.member","Safe member access — short-circuits to null if value is null"),
+                    TableRow("value ?: d",  "Elvis — evaluates to d when value is null"),
+                    TableRow("value!!",     "Non-null assertion — throws NullPointerException if null"),
+                    TableRow("value as? T", "Safe cast — returns null if the cast fails")
+                ))
+            CodeBlock(
+                code = """val user: User? = findUser(id)
+
+// Safe member access
+val email: String? = user?.email
+
+// Chained safe access
+val domain: String? = user?.email?.substringAfter("@")
+
+// Elvis operator — provide a default
+val displayName: String = user?.name ?: "Guest"
+
+// Elvis with throw
+val required: User = user ?: throw IllegalStateException("User ${'$'}id not found")
+
+// Non-null assertion (use sparingly)
+val forced: User = user!!   // throws if user is null
+
+// Safe cast
+val admin: Admin? = someUser as? Admin""")
+        }
+
+        DocSection(title = "Null-safe Chains") {
+            Prose(text = "Chains of ?. operations short-circuit: as soon as one link is null the entire expression evaluates to null without executing the remaining links.")
+            CodeBlock(
+                code = """data class Address(val city: String?)
+data class Profile(val address: Address?)
+data class Account(val profile: Profile?)
+
+val account: Account? = loadAccount()
+
+// All of these are safe — no runtime NPE possible
+val city: String? = account?.profile?.address?.city
+val label: String = city ?: "Unknown city"
+""")
+        }
+
+        DocSection(title = "Smart Casts") {
+            Prose(text = "After a null check or is check the compiler narrows the type in the guarded scope. You do not need to cast manually:")
+            CodeBlock(
+                code = """// Null check narrowing
+if (user != null) {
+    println(user.name)   // user is narrowed to User (non-null) here
+}
+
+// is check narrowing
+fun describe(obj: Any): String = when (obj) {
+    is String  -> obj.uppercase()         // narrowed to String
+    is Int     -> "Int: ${'$'}obj"             // narrowed to Int
+    is List<*> -> "List of size ${'$'}{obj.size}" // narrowed to List<*>
+    else       -> obj.toString()
+}
+
+// Combined && narrowing
+if (x is String && x.length > 3) {
+    println(x.uppercase())   // x is already narrowed to String
+}""")
+            Callout(
+                kind    = "note",
+                message = "Smart casts work on local val variables and parameters. They do not apply to open var properties, because another thread or override could change the value between the check and the use.")
+        }
+
+        DocSection(title = "lateinit var") {
+            Prose(text = "lateinit var tells the compiler that a var will be initialised before it is first accessed, but that the initialiser cannot be provided at the declaration site (for example, during dependency injection).")
+            CodeBlock(
+                code = """class Service {
+    lateinit var repository: UserRepository
+
+    fun init(repo: UserRepository) {
+        repository = repo
+    }
+
+    fun doWork() {
+        val users = repository.findAll()  // safe after init()
+    }
+}""")
+            Callout(
+                kind    = "warning",
+                message = "Accessing a lateinit var before it has been initialised throws E0212 at runtime. The compiler cannot verify that the initialisation has occurred before the first access.")
+            Prose(text = "Restrictions: lateinit cannot be applied to a val, a primitive type (Int, Boolean, etc.), or a nullable type (T?).")
+        }
+
+        DocSection(title = "Compiler Diagnostics") {
+            DocTable(
+                headers = listOf("Code", "Meaning"),
+                rows = listOf(
+                    TableRow("E0210", "Unsafe null dereference — use ?. instead of ."),
+                    TableRow("E0211", "!! applied to a value that the compiler already knows is non-null"),
+                    TableRow("E0212", "lateinit var accessed before it has been initialised")
+                ))
+        }
+
+        PageNav(
+            prevLabel  = "Collections & stdlib",
+            prevPage   = "stdlib",
+            nextLabel  = "Error Codes",
+            nextPage   = "error-codes",
+            onNavigate = onNavigate)
+    }
+}
