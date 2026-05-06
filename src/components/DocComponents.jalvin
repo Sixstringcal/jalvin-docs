@@ -58,6 +58,19 @@ component fun Prose(text: String) { return Text(text = text, style = TextStyle.b
 
 component fun ProseSmall(text: String) { return Text(text = text, style = TextStyle.bodyMedium, color = DocColors.mutedText) }
 
+component fun ExternalLink(label: String, url: String) {
+    return Card(
+        elevation = 0,
+        onClick   = { window.open(url, "_blank") },
+        modifier  = Modifier.Default) {
+        Text(
+            text     = label,
+            style    = TextStyle.bodyLarge,
+            modifier = Modifier.Default.textDecoration("underline"),
+            color    = "#1976d2")
+    }
+}
+
 // ── Code block ────────────────────────────────────────────────────────────────
 
 component fun CodeBlock(code: String, label: String = "") {
@@ -78,8 +91,13 @@ component fun CodeBlock(code: String, label: String = "") {
                 .fillMaxWidth()
                 .background(DocColors.codeBg)
                 .borderRadius(DocSpacing.codeRadius)
-                .padding(20)) {
-            Text(text = code, style = TextStyle.code, color = DocColors.codeText)
+                .padding(20)
+                .overflow("auto")) {
+            Text(
+                text = code,
+                modifier = Modifier.Default.whiteSpace("pre").fontFamily("monospace"),
+                style = TextStyle.code,
+                color = DocColors.codeText)
         }
     }
 }

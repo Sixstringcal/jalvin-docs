@@ -69,20 +69,25 @@ component fun UIComponentsPage(onNavigate: (String) -> Unit) {
                     TableRow("width(n)",                "Fixed width in dp"),
                     TableRow("height(n)",               "Fixed height in dp"),
                     TableRow("size(n)",                 "Fixed width and height in dp"),
-                    TableRow("weight(n)",               "Flexible weight in a Row or Column"),
+                    TableRow("minWidth(n)",             "Minimum width in dp"),
+                    TableRow("maxWidth(n)",             "Maximum width in dp"),
                     TableRow("padding(n)",              "Uniform padding in dp"),
                     TableRow("paddingHorizontal(n)",    "Left and right padding"),
                     TableRow("paddingVertical(n)",      "Top and bottom padding"),
                     TableRow("paddingTop(n)",           "Top padding only"),
                     TableRow("paddingBottom(n)",        "Bottom padding only"),
-                    TableRow("paddingStart(n)",         "Leading padding only"),
-                    TableRow("paddingEnd(n)",           "Trailing padding only"),
+                    TableRow("paddingLeft(n)",          "Left padding only"),
+                    TableRow("paddingRight(n)",         "Right padding only"),
                     TableRow("background(color)",       "Fill colour (hex string or Color constant)"),
                     TableRow("borderRadius(n)",         "Corner radius in dp"),
-                    TableRow("border(width, color)",    "Outline border"),
-                    TableRow("shadow(elevation)",       "Drop shadow at given elevation"),
+                    TableRow("border(v)",               "CSS border string e.g. \"1px solid #ccc\""),
+                    TableRow("boxShadow(v)",            "CSS box-shadow string"),
                     TableRow("opacity(f)",              "Opacity from 0.0 (transparent) to 1.0 (opaque)"),
-                    TableRow("clip(shape)",             "Clip content to a shape")
+                    TableRow("overflow(v)",             "visible | hidden | scroll | auto"),
+                    TableRow("flex(n)",                 "CSS flex grow factor"),
+                    TableRow("fontFamily(v)",           "Font family string"),
+                    TableRow("textAlign(v)",            "left | center | right | justify"),
+                    TableRow("whiteSpace(v)",           "normal | nowrap | pre | pre-wrap | pre-line (2.0.25+)")
                 ))
         }
 

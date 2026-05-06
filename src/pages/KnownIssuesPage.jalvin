@@ -9,6 +9,7 @@ import src.components.DocComponents.Prose
 import src.components.DocComponents.DocTable
 import src.components.DocComponents.TableRow
 import src.components.DocComponents.Callout
+import src.components.DocComponents.ExternalLink
 import src.components.DocComponents.PageNav
 
 component fun KnownIssuesPage(onNavigate: (String) -> Unit) {
@@ -22,9 +23,10 @@ component fun KnownIssuesPage(onNavigate: (String) -> Unit) {
             DocTable(
                 headers = listOf("Feature", "Status", "Workaround"),
                 rows = listOf(
-                    TableRow("Full Type Inference", "Partial", "Provide explicit types for complex lambda expressions."),
-                    TableRow("Reflective Access",    "Planned", "Avoid logic that depends on runtime class inspection."),
-                    TableRow("Circular Dependencies", "Limited", "Use interface-based decoupling to break cycles.")
+                    TableRow("Full Type Inference",    "Partial",  "Provide explicit types for complex lambda expressions."),
+                    TableRow("Reflective Access",       "Planned",  "Avoid logic that depends on runtime class inspection."),
+                    TableRow("Circular Dependencies",   "Limited",  "Use interface-based decoupling to break cycles."),
+                    TableRow("Keywords as named args",  "Bug",      "The 'as' keyword cannot be used as a named argument label. Use Modifier.whiteSpace() instead of Text(as=...). Reported to team.")
                 ))
         }
 
@@ -37,7 +39,10 @@ component fun KnownIssuesPage(onNavigate: (String) -> Unit) {
         }
 
         DocSection(title = "Reporting Bugs") {
-            Prose(text = "If you encounter an issue not listed here, please report it via our internal bug tracking system or the /bug command in the Gemini CLI.")
+            Prose(text = "If you encounter an issue not listed here, please open a GitHub issue:")
+            ExternalLink(
+                label = "github.com/Sixstringcal/jalvin/issues",
+                url   = "https://github.com/Sixstringcal/jalvin/issues")
         }
 
         PageNav(
