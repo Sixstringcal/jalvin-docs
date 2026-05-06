@@ -4,6 +4,7 @@ import jalvin from "@jalvin/vite-plugin";
 import { resolve } from "path";
 
 export default defineConfig({
+  base: "/jalvin-docs/",
   resolve: {
     alias: {
       src: resolve(__dirname, "src"),
