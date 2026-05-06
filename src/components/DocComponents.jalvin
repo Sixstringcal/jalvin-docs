@@ -147,7 +147,7 @@ component fun DocTable(headers: List<String>, rows: List<TableRow>) {
                     .background(DocColors.navBg)
                     .padding(12),
                 spacing = 0) {
-                for ((idx, header) in headers.withIndex()) {
+                for (header in headers) {
                     Box(modifier = Modifier.Default.flex(1)) {
                         Text(text = header, style = TextStyle.labelLarge, color = DocColors.mutedText)
                     }
@@ -155,10 +155,9 @@ component fun DocTable(headers: List<String>, rows: List<TableRow>) {
             }
             Divider(modifier = Modifier.fillMaxWidth(), color = Color.Outline)
             // Data rows
-            for ((rowIdx, row) in rows.withIndex()) {
-                val rowBg = if (rowIdx % 2 == 0) "#ffffff" else "#fafafa"
+            for (row in rows) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(rowBg).padding(12),
+                    modifier = Modifier.fillMaxWidth().padding(12),
                     spacing = 0) {
                     Box(modifier = Modifier.Default.flex(1)) {
                         Text(text = row.col1, style = TextStyle.code, color = "#3949ab")
@@ -172,9 +171,7 @@ component fun DocTable(headers: List<String>, rows: List<TableRow>) {
                         }
                     }
                 }
-                if (rowIdx < rows.size - 1) {
-                    Divider(modifier = Modifier.fillMaxWidth(), color = "#f0f0f0")
-                }
+                Divider(modifier = Modifier.fillMaxWidth(), color = Color.Outline)
             }
         }
     }

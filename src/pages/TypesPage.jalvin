@@ -2,16 +2,21 @@
 // TypesPage.jalvin — Built-in types, nullable types, generics, function types
 // ─────────────────────────────────────────────────────────────────────────────
 import @jalvin/runtime.listOf
-import @jalvin/runtime.*
-import @jalvin/runtime.listOf
 import @jalvin/ui.Column
 import @jalvin/ui.Row
 import @jalvin/ui.Box
 import @jalvin/ui.Text
 import @jalvin/ui.Modifier
 import @jalvin/ui.Color
-import src.components.DocComponents.*
-import src.components.DocTheme.*
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.Callout
+import src.components.DocComponents.PageNav
+import src.components.DocTheme.DocColors
 
 component fun TypesPage(onNavigate: (String) -> Unit) {
     return DocPage(

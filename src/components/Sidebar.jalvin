@@ -17,7 +17,7 @@ data class NavSection(val title: String, val items: List<NavItem>)
 
 val navSections: List<NavSection> = listOf(
     NavSection(
-        title = "Overview",
+        title = "OVERVIEW",
         items = listOf(
             NavItem("introduction",      "Introduction"),
             NavItem("getting-started",   "Getting Started"),
@@ -25,7 +25,7 @@ val navSections: List<NavSection> = listOf(
         )
     ),
     NavSection(
-        title = "Language Reference",
+        title = "LANGUAGE REFERENCE",
         items = listOf(
             NavItem("lexical",      "Lexical Structure"),
             NavItem("types",        "Types"),
@@ -36,7 +36,7 @@ val navSections: List<NavSection> = listOf(
         )
     ),
     NavSection(
-        title = "Async & State",
+        title = "ASYNC & STATE",
         items = listOf(
             NavItem("coroutines", "Coroutines"),
             NavItem("state-mvvm", "State & MVVM"),
@@ -50,13 +50,13 @@ val navSections: List<NavSection> = listOf(
         )
     ),
     NavSection(
-        title = "Standard Library",
+        title = "STANDARD LIBRARY",
         items = listOf(
             NavItem("stdlib", "Collections & stdlib")
         )
     ),
     NavSection(
-        title = "Diagnostics",
+        title = "DIAGNOSTICS",
         items = listOf(
             NavItem("error-codes",  "Error Codes"),
             NavItem("known-issues", "Known Issues")
@@ -90,7 +90,7 @@ component fun SidebarSection(
     return Column(modifier = Modifier.fillMaxWidth().paddingBottom(8)) {
         Box(modifier = Modifier.fillMaxWidth().paddingHorizontal(16).paddingVertical(6)) {
             Text(
-                text = section.title.uppercase(),
+                text = section.title,
                 style = TextStyle.labelSmall,
                 color = DocColors.mutedText)
         }
@@ -111,11 +111,11 @@ component fun SidebarItem(
     isActive: Boolean,
     onNavigate: (String) -> Unit
 ) {
-    val bg: Color     = if (isActive) Color.PrimaryLight else "transparent"
-    val fg: Color     = if (isActive) Color.Primary      else Color.OnSurface
-    val weight: Any   = if (isActive) TextStyle.labelLarge else TextStyle.bodyMedium
+    val bg: Color   = if (isActive) Color.PrimaryLight else "transparent"
+    val fg: Color   = if (isActive) Color.Primary      else Color.OnSurface
+    val weight: Any = if (isActive) TextStyle.labelLarge else TextStyle.bodyMedium
 
-    Card(
+    return Card(
         modifier = Modifier
             .fillMaxWidth()
             .paddingHorizontal(16)
@@ -127,3 +127,4 @@ component fun SidebarItem(
         Text(text = item.label, style = weight, color = fg)
     }
 }
+

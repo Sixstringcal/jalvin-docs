@@ -25,7 +25,7 @@ import src.pages.NullSafetyPage
 import src.pages.ErrorCodesPage
 import src.pages.AnnotationsPage
 import src.pages.KnownIssuesPage
-import src.components.Sidebar
+import src.components.Sidebar.Sidebar
 import src.components.DocTheme.DocTheme
 
 component fun DocsApp() {
