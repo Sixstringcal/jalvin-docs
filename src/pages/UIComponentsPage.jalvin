@@ -87,11 +87,12 @@ component fun UIComponentsPage(onNavigate: (String) -> Unit) {
                     TableRow("flex(n)",                 "CSS flex grow factor"),
                     TableRow("fontFamily(v)",           "Font family string"),
                     TableRow("textAlign(v)",            "left | center | right | justify"),
-                    TableRow("whiteSpace(v)",           "normal | nowrap | pre | pre-wrap | pre-line (2.0.25+)")
+                    TableRow("whiteSpace(v)",           "normal | nowrap | pre | pre-wrap | pre-line (2.0.26+)")
                 ))
         }
 
         DocSection(title = "Text") {
+            Prose(text = "Text accepts a plain String or an AnnotatedString (see below) for inline links and styled spans.")
             CodeBlock(
                 code = """Text(
     text     = "Hello, Jalvin!",
@@ -110,6 +111,68 @@ component fun UIComponentsPage(onNavigate: (String) -> Unit) {
                     TableRow("labelLarge / Medium / Small",   "Compact labels, badges, captions"),
                     TableRow("code",                          "Monospace code snippets")
                 ))
+        }
+
+        DocSection(title = "AnnotatedString (2.0.26+)") {
+            Prose(text = "AnnotatedString is a rich-text type that carries inline style spans and clickable or URL links. Build one with buildAnnotatedString {} and pass it directly to Text.")
+            CodeBlock(
+                code = """val text = buildAnnotatedString {
+    append("Click ")
+    withLink(LinkAnnotation.Url("https://jalvin.dev")) {
+        withStyle(SpanStyle(color = "#0057d8", textDecoration = TextDecoration.Underline)) {
+            append("the docs")
+        }
+    }
+    append(" or ")
+    withLink(LinkAnnotation.Clickable("open-dialog", { tag -> openDialog(tag) })) {
+        append("open the dialog")
+    }
+    append(".")
+}
+
+Text(text = text, style = TextStyle.bodyLarge)""")
+            DocTable(
+                headers = listOf("API", "Description"),
+                rows = listOf(
+                    TableRow("buildAnnotatedString { }",         "Builder that returns an AnnotatedString"),
+                    TableRow("append(text)",                     "Append a plain string segment"),
+                    TableRow("withStyle(SpanStyle(...)) { }",    "Apply inline style to the enclosed segments"),
+                    TableRow("withLink(LinkAnnotation) { }",     "Wrap enclosed segments in a link"),
+                    TableRow("addStyle(style, start, end)",      "Apply a style to an explicit character range"),
+                    TableRow("addLink(annotation, start, end)",  "Apply a link to an explicit character range")
+                ))
+            Prose(text = "SpanStyle properties:")
+            DocTable(
+                headers = listOf("Property", "Type", "Description"),
+                rows = listOf(
+                    TableRow("color",          "String?", "Foreground colour"),
+                    TableRow("fontSize",       "String?", "CSS font-size value"),
+                    TableRow("fontWeight",     "String?", "CSS font-weight value"),
+                    TableRow("fontStyle",      "String?", "normal | italic"),
+                    TableRow("textDecoration", "TextDecoration?", "Underline, LineThrough, or combined")
+                ))
+            Prose(text = "TextDecoration constants:")
+            CodeBlock(
+                code = """TextDecoration.None
+TextDecoration.Underline
+TextDecoration.LineThrough
+TextDecoration.Underline + TextDecoration.LineThrough   // combined""")
+            Prose(text = "LinkAnnotation factories:")
+            CodeBlock(
+                code = """// Opens a URL in a new tab
+LinkAnnotation.Url("https://example.com")
+LinkAnnotation.Url("https://example.com", styles = TextLinkStyles(
+    style        = SpanStyle(color = "#0057d8"),
+    hoveredStyle = SpanStyle(color = "#003a99")
+))
+
+// Custom click handler
+LinkAnnotation.Clickable("my-tag", { tag -> handleClick(tag) })
+LinkAnnotation.Clickable("my-tag", { tag -> handleClick(tag) }, styles = TextLinkStyles(
+    style         = SpanStyle(color = "#333"),
+    hoveredStyle  = SpanStyle(color = "#000")
+))""")
+            Prose(text = "TextLinkStyles lets you provide per-interaction-state SpanStyles (style, focusedStyle, hoveredStyle, pressedStyle).")
         }
 
         DocSection(title = "Button") {

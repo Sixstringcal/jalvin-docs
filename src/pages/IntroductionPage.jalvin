@@ -27,11 +27,11 @@ component fun IntroductionPage(onNavigate: (String) -> Unit) {
 
         DocSection(title = "What is Jalvin?") {
             Prose(text = "Jalvin is a modern programming language designed for building UI-first, type-safe applications across every platform from a single codebase. It compiles to native output and provides first-class support for reactive UIs, structured concurrency, and safe null handling without the boilerplate.")
-            Prose(text = "At its core, Jalvin blends expressive, Kotlin-inspired syntax with seamless ecosystem interoperability and a powerful standard library. Whether you are writing a web frontend, a mobile screen, or a background service, Jalvin gives you one language and one set of idioms to learn.")
+            Prose(text = "At its core, Jalvin blends seamless ecosystem interoperability and a powerful standard library. Whether you are writing a web frontend, a mobile screen, or a background service, Jalvin gives you one language and one set of idioms to learn.")
         }
 
         DocSection(title = "Hello, World") {
-            Prose(text = "The shortest complete Jalvin program:")
+            Prose(text = "A short, complete Jalvin program:")
             CodeBlock(
                 label = "main.jalvin",
                 code = """fun main() {

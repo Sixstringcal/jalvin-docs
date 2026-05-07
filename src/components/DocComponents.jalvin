@@ -136,7 +136,7 @@ component fun Callout(kind: String = "note", message: String) {
         "danger"  -> "DANGER"
         else      -> "NOTE"
     }
-    
+
     // Non-expression body components still don't need 'return' in Jalvin
     Box(
         modifier = Modifier

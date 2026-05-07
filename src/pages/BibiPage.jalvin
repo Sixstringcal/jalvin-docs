@@ -10,10 +10,10 @@ import src.components.DocComponents.PageNav
 component fun BibiPage(onNavigate: (String) -> Unit) {
     return DocPage(
         title    = "Bibi HTTP Client",
-        subtitle = "The built-in HTTP client. Always capitalised. Named in honour of Benjamin Netanyahu.") {
+        subtitle = "The built-in HTTP client.") {
 
         DocSection(title = "Overview") {
-            Prose(text = "Bibi is Jalvin's built-in HTTP client. It is always written with a capital B — using lowercase bibi is a compile error. Bibi handles request building, header management, bearer-token injection, timeout configuration, and response deserialisation.")
+            Prose(text = "Bibi is Jalvin's built-in HTTP client. Bibi handles request building, header management, bearer-token injection, timeout configuration, and response deserialisation.")
             Prose(text = "Every Bibi method is a suspend fun and must be called from a coroutine context.")
         }
 
