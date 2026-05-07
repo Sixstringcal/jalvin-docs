@@ -374,6 +374,45 @@ AsyncImage(
 }""")
         }
 
+        DocSection(title = "Interaction Source") {
+            Prose(text = "useMutableInteractionSource() creates a reactive interaction source that tracks hover and press state. Attach it to a Box via Modifier.hoverable() and/or Modifier.pressable(), then read its state with useIsHovered() or useIsPressed() to drive conditional styling.")
+            CodeBlock(
+                code = """import @jalvin/ui.useMutableInteractionSource
+import @jalvin/ui.useIsHovered
+import @jalvin/ui.useIsPressed
+
+component fun InteractiveBox() {
+    val source    = useMutableInteractionSource()
+    val isHovered = useIsHovered(source)
+    val isPressed = useIsPressed(source)
+
+    val bg = when {
+        isPressed -> "#bbb"
+        isHovered -> "#ddd"
+        else      -> "#fff"
+    }
+
+    return Box(
+        modifier = Modifier
+            .size(120)
+            .borderRadius(8)
+            .hoverable(source)
+            .pressable(source)
+            .background(bg)) {
+        Text(text = "Hover or press me", style = TextStyle.bodyMedium)
+    }
+}""")
+            DocTable(
+                headers = listOf("API", "Description"),
+                rows = listOf(
+                    TableRow("useMutableInteractionSource()",  "Creates a new MutableInteractionSource instance scoped to the component"),
+                    TableRow("useIsHovered(source)",           "Returns true while the pointer is over the attached element"),
+                    TableRow("useIsPressed(source)",           "Returns true while the pointer is held down on the attached element"),
+                    TableRow("Modifier.hoverable(source)",     "Registers the element with the interaction source for hover tracking"),
+                    TableRow("Modifier.pressable(source)",     "Registers the element with the interaction source for press tracking")
+                ))
+        }
+
         DocSection(title = "Color Palette") {
             DocTable(
                 headers = listOf("Constant", "Usage"),

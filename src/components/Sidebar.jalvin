@@ -2,6 +2,9 @@
 // Sidebar.jalvin — Navigation sidebar for the documentation site
 // ─────────────────────────────────────────────────────────────────────────────
 import @jalvin/runtime.listOf
+import @jalvin/ui.useMutableInteractionSource
+import @jalvin/ui.useIsHovered
+import @jalvin/ui.useIsPressed
 import @jalvin/ui.Column
 import @jalvin/ui.Box
 import @jalvin/ui.Card
@@ -111,8 +114,17 @@ component fun SidebarItem(
     isActive: Boolean,
     onNavigate: (String) -> Unit
 ) {
-    val bg: Color   = if (isActive) Color.PrimaryLight else "transparent"
-    val fg: Color   = if (isActive) Color.Primary      else Color.OnSurface
+    val source    = useMutableInteractionSource()
+    val isHovered = useIsHovered(source)
+    val isPressed = useIsPressed(source)
+
+    val bg: Color = when {
+        isActive  -> Color.Primary
+        isPressed -> "#c8d3e8"
+        isHovered -> "#dde3f0"
+        else      -> "transparent"
+    }
+    val fg: Color   = if (isActive) Color.OnPrimary else Color.OnSurface
     val weight: Any = if (isActive) TextStyle.labelLarge else TextStyle.bodyMedium
 
     return Card(
@@ -121,7 +133,10 @@ component fun SidebarItem(
             .paddingHorizontal(16)
             .paddingVertical(8)
             .background(bg)
-            .borderRadius(6),
+            .borderRadius(6)
+            .cursor("pointer")
+            .hoverable(source)
+            .pressable(source),
         elevation = 0,
         onClick = { onNavigate(item.id) }) {
         Text(text = item.label, style = weight, color = fg)

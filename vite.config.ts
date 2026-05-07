@@ -19,6 +19,9 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
   },
+  optimizeDeps: {
+    include: ["@jalvin/ui", "@jalvin/runtime"],
+  },
   build: {
     target: "esnext",
     commonjsOptions: {
