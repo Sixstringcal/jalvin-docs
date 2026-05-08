@@ -7,6 +7,7 @@ export default defineConfig({
   base: "/",
   resolve: {
     alias: {
+      "@jalvin/ui": resolve(__dirname, "src/ui-compat.ts"),
       src: resolve(__dirname, "src"),
     },
     extensions: [".jalvin", ".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],

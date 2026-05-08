@@ -1,38 +1,49 @@
 import @jalvin/runtime.mutableStateOf
+import @jalvin/runtime.calculateWindowSizeClass
+import @jalvin/runtime.WindowSizeClassState
+import @jalvin/runtime.MutableState
 import @jalvin/ui.Scaffold
 import @jalvin/ui.TopBar
 import @jalvin/ui.Row
 import @jalvin/ui.Box
+import @jalvin/ui.Card
 import @jalvin/ui.Text
+import @jalvin/ui.IconButton
 import @jalvin/ui.Divider
 import @jalvin/ui.Modifier
 import @jalvin/ui.Color
 import @jalvin/ui.TextStyle
 
-import src.pages.IntroductionPage
-import src.pages.GettingStartedPage
-import src.pages.ProjectStructurePage
-import src.pages.LexicalPage
-import src.pages.TypesPage
-import src.pages.DeclarationsPage
-import src.pages.ControlFlowPage
-import src.pages.CoroutinesPage
-import src.pages.BibiPage
-import src.pages.StateMvvmPage
-import src.pages.UIComponentsPage
-import src.pages.StdLibPage
-import src.pages.NullSafetyPage
-import src.pages.ErrorCodesPage
-import src.pages.AnnotationsPage
-import src.pages.KnownIssuesPage
+import src.pages.IntroductionPage.IntroductionPage
+import src.pages.GettingStartedPage.GettingStartedPage
+import src.pages.ProjectStructurePage.ProjectStructurePage
+import src.pages.LexicalPage.LexicalPage
+import src.pages.TypesPage.TypesPage
+import src.pages.DeclarationsPage.DeclarationsPage
+import src.pages.ControlFlowPage.ControlFlowPage
+import src.pages.CoroutinesPage.CoroutinesPage
+import src.pages.BibiPage.BibiPage
+import src.pages.StateMvvmPage.StateMvvmPage
+import src.pages.UIComponentsPage.UIComponentsPage
+import src.pages.MobilePage.MobilePage
+import src.pages.StdLibPage.StdLibPage
+import src.pages.NullSafetyPage.NullSafetyPage
+import src.pages.ErrorCodesPage.ErrorCodesPage
+import src.pages.AnnotationsPage.AnnotationsPage
+import src.pages.KnownIssuesPage.KnownIssuesPage
 import src.components.Sidebar.Sidebar
 import src.components.DocTheme.DocTheme
+import src.components.DocTheme.DocColors
 
 component fun DocsApp() {
     val currentPage = mutableStateOf("introduction")
+    val drawerOpen  = mutableStateOf(false)
+    val windowSize: WindowSizeClassState = calculateWindowSizeClass()
+    val isCompact   = windowSize.widthSizeClass == "Compact"
 
     val navigate = (page: String) => {
         currentPage.value = page
+        drawerOpen.value = false
     }
 
     DocTheme {
@@ -40,49 +51,206 @@ component fun DocsApp() {
             modifier = Modifier.fillMaxSize(),
             topBar = TopBar(
                 title = "Jalvin Developer Docs",
-                navigationIcon = Box(
-                    modifier = Modifier.size(32).background(Color.Primary).borderRadius(6),
-                    contentAlignment = "center") {
-                    Text(text = "J", style = TextStyle.titleSmall, color = Color.OnPrimary)
-                })) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                Sidebar(currentPage = currentPage.value, onNavigate = navigate)
-                Divider(orientation = "vertical", modifier = Modifier.height(0))
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .flex(1)
-                        .padding(0)
-                        .background(Color.Background)) {
-                    PageContent(page = currentPage.value, onNavigate = navigate)
-                }
-            }
+                navigationIcon = TopBarNavIcon(isCompact = isCompact, drawerOpen = drawerOpen))) {
+            AppContent(
+                isCompact    = isCompact,
+                currentPage  = currentPage.value,
+                drawerOpen   = drawerOpen,
+                navigate     = navigate)
+        }
+    }
+}
+
+component fun TopBarNavIcon(isCompact: Boolean, drawerOpen: MutableState<Boolean>) {
+    if (isCompact) {
+        IconButton(onClick = { drawerOpen.value = !drawerOpen.value }) {
+            Text(text = "☰", style = TextStyle.titleMedium, color = Color.OnSurface)
+        }
+    } else {
+        Box(
+            modifier = Modifier.size(32).background(Color.Primary).borderRadius(6),
+            contentAlignment = "center") {
+            Text(text = "J", style = TextStyle.titleSmall, color = Color.OnPrimary)
+        }
+    }
+}
+
+component fun AppContent(
+    isCompact: Boolean,
+    currentPage: String,
+    drawerOpen: MutableState<Boolean>,
+    navigate: (String) -> Unit
+) {
+    if (isCompact) {
+        MobileLayout(
+            currentPage = currentPage,
+            drawerOpen  = drawerOpen,
+            navigate    = navigate)
+    } else {
+        DesktopLayout(
+            currentPage = currentPage,
+            navigate    = navigate)
+    }
+}
+
+component fun MobileLayout(
+    currentPage: String,
+    drawerOpen: MutableState<Boolean>,
+    navigate: (String) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        PageContent(page = currentPage, onNavigate = navigate)
+        DrawerOverlay(
+            drawerOpen  = drawerOpen,
+            currentPage = currentPage,
+            navigate    = navigate)
+    }
+}
+
+component fun DesktopLayout(currentPage: String, navigate: (String) -> Unit) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        Sidebar(currentPage = currentPage, onNavigate = navigate)
+        Divider(orientation = "vertical", modifier = Modifier.height(0))
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .flex(1)
+                .padding(0)
+                .background(Color.Background)) {
+            PageContent(page = currentPage, onNavigate = navigate)
+        }
+    }
+}
+
+component fun DrawerOverlay(
+    drawerOpen: MutableState<Boolean>,
+    currentPage: String,
+    navigate: (String) -> Unit
+) {
+    val isOpen: Boolean = drawerOpen.value
+
+    return Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .position("fixed")
+            .top(0)
+            .left(0)
+            .zIndex(99)
+            .pointerEvents(if (isOpen) "auto" else "none")) {
+        // Scrim
+        Card(
+            modifier  = Modifier
+                .fillMaxSize()
+                .position("absolute")
+                .top(0)
+                .left(0)
+                .padding(0)
+                .borderRadius(0)
+                .background("rgba(0,0,0,0.4)")
+                .opacity(if (isOpen) 1 else 0)
+                .transition("opacity 0.3s ease-out"),
+            elevation = 0,
+            onClick   = { drawerOpen.value = false }) {}
+        
+        // Drawer Panel
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(280)
+                .position("absolute")
+                .top(0)
+                .left(0)
+                .zIndex(100)
+                .background(DocColors.navBg)
+                .transform(if (isOpen) "translateX(0)" else "translateX(-100%)")
+                .transition("transform 0.3s ease-out, box-shadow 0.3s ease-out")
+                .boxShadow(if (isOpen) "4px 0 12px rgba(0,0,0,0.2)" else "none")) {
+            Sidebar(
+                currentPage = currentPage,
+                onNavigate  = navigate,
+                onClose     = { drawerOpen.value = false })
         }
     }
 }
 
 component fun PageContent(page: String, onNavigate: (String) -> Unit) {
-    when (page) {
-        "introduction"      -> IntroductionPage(onNavigate = onNavigate)
-        "getting-started"   -> GettingStartedPage(onNavigate = onNavigate)
-        "project-structure" -> ProjectStructurePage(onNavigate = onNavigate)
-        "lexical"           -> LexicalPage(onNavigate = onNavigate)
-        "types"             -> TypesPage(onNavigate = onNavigate)
-        "declarations"      -> DeclarationsPage(onNavigate = onNavigate)
-        "control-flow"      -> ControlFlowPage(onNavigate = onNavigate)
-        "coroutines"        -> CoroutinesPage(onNavigate = onNavigate)
-        "bibi"              -> BibiPage(onNavigate = onNavigate)
-        "state-mvvm"        -> StateMvvmPage(onNavigate = onNavigate)
-        "ui-components"     -> UIComponentsPage(onNavigate = onNavigate)
-        "stdlib"            -> StdLibPage(onNavigate = onNavigate)
-        "null-safety"       -> NullSafetyPage(onNavigate = onNavigate)
-        "error-codes"       -> ErrorCodesPage(onNavigate = onNavigate)
-        "annotations"       -> AnnotationsPage(onNavigate = onNavigate)
-        "known-issues"      -> KnownIssuesPage(onNavigate = onNavigate)
-        else                -> IntroductionPage(onNavigate = onNavigate)
+    if (page == "introduction") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            IntroductionPage(onNavigate = onNavigate)
+        }
+    } else if (page == "getting-started") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            GettingStartedPage(onNavigate = onNavigate)
+        }
+    } else if (page == "project-structure") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            ProjectStructurePage(onNavigate = onNavigate)
+        }
+    } else if (page == "lexical") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            LexicalPage(onNavigate = onNavigate)
+        }
+    } else if (page == "types") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            TypesPage(onNavigate = onNavigate)
+        }
+    } else if (page == "declarations") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            DeclarationsPage(onNavigate = onNavigate)
+        }
+    } else if (page == "control-flow") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            ControlFlowPage(onNavigate = onNavigate)
+        }
+    } else if (page == "coroutines") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            CoroutinesPage(onNavigate = onNavigate)
+        }
+    } else if (page == "bibi") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            BibiPage(onNavigate = onNavigate)
+        }
+    } else if (page == "state-mvvm") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            StateMvvmPage(onNavigate = onNavigate)
+        }
+    } else if (page == "ui-components") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            UIComponentsPage(onNavigate = onNavigate)
+        }
+    } else if (page == "mobile") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            MobilePage(onNavigate = onNavigate)
+        }
+    } else if (page == "stdlib") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            StdLibPage(onNavigate = onNavigate)
+        }
+    } else if (page == "null-safety") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            NullSafetyPage(onNavigate = onNavigate)
+        }
+    } else if (page == "error-codes") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            ErrorCodesPage(onNavigate = onNavigate)
+        }
+    } else if (page == "annotations") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AnnotationsPage(onNavigate = onNavigate)
+        }
+    } else if (page == "known-issues") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            KnownIssuesPage(onNavigate = onNavigate)
+        }
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            IntroductionPage(onNavigate = onNavigate)
+        }
     }
 }
 
 fun main() {
     println("Jalvin Developer Docs")
 }
+
+

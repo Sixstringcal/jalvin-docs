@@ -19,6 +19,8 @@ object DocColors {
 }
 
 object DocSpacing {
+    val pagePaddingH = 24
+    val pagePaddingV = 40
     val pagePadding  = 40
     val sectionGap   = 32
     val blockGap     = 16

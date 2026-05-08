@@ -1,0 +1,256 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// MobilePage.jalvin — Mobile & Adaptive Layout documentation
+// ─────────────────────────────────────────────────────────────────────────────
+import @jalvin/runtime.listOf
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.DocSubSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.ProseSmall
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
+import src.components.DocComponents.DocTable
+import src.components.DocComponents.TableRow
+import src.components.DocComponents.BulletItem
+import src.components.DocComponents.PageNav
+
+component fun MobilePage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Mobile & Adaptive Layout",
+        subtitle = "Build responsive UIs that adapt automatically to phone, tablet, and desktop viewports using calculateWindowSizeClass().") {
+
+        DocSection(title = "Overview") {
+            Prose(text = "Jalvin provides first-class adaptive layout support through the calculateWindowSizeClass() API. A single component tree can serve every screen size by branching on the width or height size class.")
+            Callout(
+                kind    = "tip",
+                message = "calculateWindowSizeClass() is reactive — it automatically re-renders any component that calls it whenever the window crosses a breakpoint boundary. No manual resize listeners are needed.")
+        }
+
+        DocSection(title = "WindowSizeClass") {
+            Prose(text = "WindowSizeClass is a sealed string union with three variants. Both width and height are classified independently.")
+            DocTable(
+                headers = listOf("Class", "Width breakpoint", "Height breakpoint", "Typical device"),
+                rows = listOf(
+                    TableRow("Compact",  "< 600 px",  "< 480 px",  "Phone (portrait)"),
+                    TableRow("Medium",   "600–840 px", "480–900 px", "Tablet / foldable / phone (landscape)"),
+                    TableRow("Expanded", "> 840 px",  "> 900 px",  "Desktop / large tablet")
+                ))
+            Callout(
+                kind    = "note",
+                message = "The breakpoints are based on standard adaptive design guidelines (dp ≈ px at 160 dpi). Jalvin measures the browser viewport in pixels and maps them to the same thresholds.")
+        }
+
+        DocSection(title = "calculateWindowSizeClass()") {
+            Prose(text = "The function returns a WindowSizeClassState that holds both the width and height class. Call it at the top of any component fun and branch on its fields.")
+            CodeBlock(
+                label = "API signature",
+                code  = """// @jalvin/runtime
+fun calculateWindowSizeClass(): WindowSizeClassState
+
+data class WindowSizeClassState(
+    val widthSizeClass:  WindowSizeClass,   // "Compact" | "Medium" | "Expanded"
+    val heightSizeClass: WindowSizeClass
+)""")
+            CodeBlock(
+                label = "Basic usage",
+                code  = """component fun AdaptiveScreen() {
+    val windowSize = calculateWindowSizeClass()
+
+    if (windowSize.widthSizeClass == "Compact") {
+        MobileLayout()
+    } else {
+        DesktopLayout()
+    }
+}""")
+        }
+
+        DocSection(title = "Three-tier branching") {
+            Prose(text = "Use a when expression to handle all three tiers cleanly.")
+            CodeBlock(
+                code = """component fun AdaptiveContent() {
+    val windowSize = calculateWindowSizeClass()
+
+    when (windowSize.widthSizeClass) {
+        "Compact"  -> PhoneLayout()
+        "Medium"   -> TabletLayout()
+        "Expanded" -> DesktopLayout()
+    }
+}""")
+        }
+
+        DocSection(title = "Adaptive navigation patterns") {
+            DocSubSection(title = "Compact — drawer navigation") {
+                Prose(text = "On small screens a persistent sidebar wastes precious width. Replace it with a hamburger button in the TopBar that opens a modal drawer.")
+                CodeBlock(
+                    code = """component fun AppShell() {
+    val drawerOpen = mutableStateOf(false)
+    val windowSize = calculateWindowSizeClass()
+    val isCompact  = windowSize.widthSizeClass == "Compact"
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar   = TopBar(
+            title          = "My App",
+            navigationIcon = if (isCompact) {
+                IconButton(onClick = { drawerOpen.value = !drawerOpen.value }) {
+                    Text(text = "☰", style = TextStyle.titleMedium)
+                }
+            } else {
+                // Brand logo for larger screens
+                AppLogo()
+            })) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Main content always visible
+            MainContent()
+
+            // Drawer only on Compact
+            if (isCompact && drawerOpen.value) {
+                // Scrim — tap to dismiss
+                Card(
+                    modifier  = Modifier
+                        .fillMaxSize()
+                        .position("fixed").top(0).left(0)
+                        .zIndex(100).background("rgba(0,0,0,0.4)"),
+                    elevation = 0,
+                    onClick   = { drawerOpen.value = false }) {}
+
+                // Drawer panel
+                Box(modifier = Modifier
+                        .fillMaxHeight().width(280)
+                        .position("fixed").top(0).left(0)
+                        .zIndex(101).background(Color.Surface)) {
+                    NavMenu(onClose = { drawerOpen.value = false })
+                }
+            }
+
+            // Persistent sidebar on Medium / Expanded
+            if (!isCompact) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    NavSidebar()
+                    Box(modifier = Modifier.flex(1).fillMaxHeight()) {
+                        MainContent()
+                    }
+                }
+            }
+        }
+    }
+}""")
+            }
+
+            DocSubSection(title = "Medium — rail navigation") {
+                Prose(text = "Tablet-width screens have enough room for a compact icon rail on the left. Condense the sidebar to icon + label and let the content area take the remaining space.")
+                CodeBlock(
+                    code = """component fun AdaptiveNav() {
+    val windowSize = calculateWindowSizeClass()
+
+    Row(modifier = Modifier.fillMaxSize()) {
+        when (windowSize.widthSizeClass) {
+            "Compact"  -> { /* nav is in a drawer — see above */ }
+            "Medium"   -> NavRail()    // icon + short label
+            "Expanded" -> NavSidebar() // full label sidebar
+        }
+        Box(modifier = Modifier.flex(1).fillMaxHeight()) {
+            PageContent()
+        }
+    }
+}""")
+            }
+        }
+
+        DocSection(title = "Adaptive typography and spacing") {
+            Prose(text = "Reduce padding and use smaller type scales on Compact screens so content is not crowded on a 360 px wide viewport.")
+            CodeBlock(
+                code = """component fun ResponsivePage(children: Any) {
+    val windowSize = calculateWindowSizeClass()
+    val isCompact  = windowSize.widthSizeClass == "Compact"
+
+    val hPad      = if (isCompact) 16 else 40
+    val titleStyle = if (isCompact) TextStyle.headlineMedium else TextStyle.displaySmall
+
+    Box(modifier = Modifier.fillMaxSize().padding(hPad)) {
+        Column(spacing = if (isCompact) 16 else 32) {
+            Text(text = "Page Title", style = titleStyle)
+            children
+        }
+    }
+}""")
+        }
+
+        DocSection(title = "Adaptive grid layouts") {
+            Prose(text = "Use widthSizeClass to vary the number of columns in a card grid.")
+            CodeBlock(
+                code = """component fun CardGrid(items: List<Item>) {
+    val windowSize = calculateWindowSizeClass()
+    val columns    = when (windowSize.widthSizeClass) {
+        "Compact"  -> 1
+        "Medium"   -> 2
+        "Expanded" -> 3
+    }
+
+    // Jalvin stdlib chunked() splits the list into rows
+    for (row in items.chunked(columns)) {
+        Row(modifier = Modifier.fillMaxWidth(), spacing = 12) {
+            for (item in row) {
+                Box(modifier = Modifier.flex(1)) {
+                    ItemCard(item = item)
+                }
+            }
+        }
+    }
+}""")
+        }
+
+        DocSection(title = "Height-based adaptation") {
+            Prose(text = "heightSizeClass lets you respond to short viewports such as a phone in landscape orientation. Compact height commonly means the keyboard is open or the device is rotated.")
+            CodeBlock(
+                code = """component fun BottomSheetLayout() {
+    val windowSize = calculateWindowSizeClass()
+
+    // On short screens (landscape phone), prefer a side panel instead of
+    // a bottom sheet that would cover most of the content area.
+    if (windowSize.heightSizeClass == "Compact") {
+        SidePanelLayout()
+    } else {
+        BottomSheetLayout()
+    }
+}""")
+        }
+
+        DocSection(title = "Testing size classes") {
+            Prose(text = "The helper functions widthToSizeClass() and heightToSizeClass() are exported for unit-testing adaptive logic without a real browser window.")
+            CodeBlock(
+                code = """// widthToSizeClass and heightToSizeClass are exported from @jalvin/runtime
+import @jalvin/runtime.widthToSizeClass
+import @jalvin/runtime.heightToSizeClass
+
+fun testBreakpoints() {
+    println(widthToSizeClass(360))   // "Compact"
+    println(widthToSizeClass(720))   // "Medium"
+    println(widthToSizeClass(1024))  // "Expanded"
+
+    println(heightToSizeClass(400))  // "Compact"
+    println(heightToSizeClass(600))  // "Medium"
+    println(heightToSizeClass(1000)) // "Expanded"
+}""")
+        }
+
+        DocSection(title = "API reference") {
+            DocTable(
+                headers = listOf("Symbol", "Kind", "Description"),
+                rows = listOf(
+                    TableRow("calculateWindowSizeClass()",  "fun",        "Returns WindowSizeClassState; re-renders on breakpoint change"),
+                    TableRow("WindowSizeClassState",        "data class", "Holds widthSizeClass and heightSizeClass"),
+                    TableRow("WindowSizeClass",             "type alias", "String union: \"Compact\" | \"Medium\" | \"Expanded\""),
+                    TableRow("widthToSizeClass(px)",        "fun",        "Maps a pixel width to WindowSizeClass (testing helper)"),
+                    TableRow("heightToSizeClass(px)",       "fun",        "Maps a pixel height to WindowSizeClass (testing helper)")
+                ))
+        }
+
+        PageNav(
+            prevLabel  = "UI Components",
+            prevPage   = "ui-components",
+            nextLabel  = "Collections & stdlib",
+            nextPage   = "stdlib",
+            onNavigate = onNavigate)
+    }
+}

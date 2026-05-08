@@ -83,11 +83,13 @@ component fun UIComponentsPage(onNavigate: (String) -> Unit) {
                     TableRow("border(v)",               "CSS border string e.g. \"1px solid #ccc\""),
                     TableRow("boxShadow(v)",            "CSS box-shadow string"),
                     TableRow("opacity(f)",              "Opacity from 0.0 (transparent) to 1.0 (opaque)"),
+                    TableRow("transition(v)",           "CSS transition string for animations"),
+                    TableRow("transform(v)",            "CSS transform string (e.g. \"translateX(-100%)\")"),
                     TableRow("overflow(v)",             "visible | hidden | scroll | auto"),
                     TableRow("flex(n)",                 "CSS flex grow factor"),
                     TableRow("fontFamily(v)",           "Font family string"),
                     TableRow("textAlign(v)",            "left | center | right | justify"),
-                    TableRow("whiteSpace(v)",           "normal | nowrap | pre | pre-wrap | pre-line (2.0.26+)")
+                    TableRow("whiteSpace(v)",           "normal | nowrap | pre | pre-wrap | pre-line")
                 ))
         }
 
@@ -113,7 +115,7 @@ component fun UIComponentsPage(onNavigate: (String) -> Unit) {
                 ))
         }
 
-        DocSection(title = "AnnotatedString (2.0.26+)") {
+        DocSection(title = "AnnotatedString") {
             Prose(text = "AnnotatedString is a rich-text type that carries inline style spans and clickable or URL links. Build one with buildAnnotatedString {} and pass it directly to Text.")
             CodeBlock(
                 code = """val text = buildAnnotatedString {
@@ -441,8 +443,8 @@ component fun InteractiveBox() {
         PageNav(
             prevLabel  = "State & MVVM",
             prevPage   = "state-mvvm",
-            nextLabel  = "Collections & stdlib",
-            nextPage   = "stdlib",
+            nextLabel  = "Mobile & Adaptive Layout",
+            nextPage   = "mobile",
             onNavigate = onNavigate)
     }
 }

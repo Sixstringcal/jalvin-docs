@@ -213,8 +213,8 @@ println(p1 === p2)   // false — different references""")
         }
 
         PageNav(
-            prevLabel  = "UI Components",
-            prevPage   = "ui-components",
+            prevLabel  = "Mobile & Adaptive Layout",
+            prevPage   = "mobile",
             nextLabel  = "Null Safety",
             nextPage   = "null-safety",
             onNavigate = onNavigate)

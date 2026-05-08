@@ -2,6 +2,8 @@
 // DocComponents.jalvin — Shared documentation UI primitives
 // ─────────────────────────────────────────────────────────────────────────────
 import @jalvin/runtime.*
+import @jalvin/runtime.calculateWindowSizeClass
+import @jalvin/runtime.WindowSizeClassState
 import @jalvin/ui.Column
 import @jalvin/ui.Row
 import @jalvin/ui.Box
@@ -18,10 +20,13 @@ import src.components.DocTheme.DocColors
 // ── Page wrapper ─────────────────────────────────────────────────────────────
 
 component fun DocPage(title: String, subtitle: String = "", children: Any) {
+    val windowSize: WindowSizeClassState = calculateWindowSizeClass()
+    val hPad: Int = if (windowSize.widthSizeClass == "Compact") 16 else DocSpacing.pagePaddingH
     return Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(DocSpacing.pagePadding)
+            .paddingHorizontal(hPad)
+            .paddingVertical(DocSpacing.pagePaddingV)
             .background(DocColors.pageBg)) {
         Column(modifier = Modifier.fillMaxWidth(), spacing = DocSpacing.sectionGap) {
             Column(modifier = Modifier.fillMaxWidth(), spacing = 8) {
