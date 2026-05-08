@@ -5,10 +5,14 @@ import @jalvin/runtime.MutableState
 import @jalvin/ui.Scaffold
 import @jalvin/ui.TopBar
 import @jalvin/ui.Row
+import @jalvin/ui.Column
 import @jalvin/ui.Box
 import @jalvin/ui.Card
 import @jalvin/ui.Text
 import @jalvin/ui.IconButton
+import @jalvin/ui.useMutableInteractionSource
+import @jalvin/ui.useIsHovered
+import @jalvin/ui.useIsPressed
 import @jalvin/ui.Divider
 import @jalvin/ui.Modifier
 import @jalvin/ui.Color
@@ -63,8 +67,30 @@ component fun DocsApp() {
 
 component fun TopBarNavIcon(isCompact: Boolean, drawerOpen: MutableState<Boolean>) {
     if (isCompact) {
-        IconButton(onClick = { drawerOpen.value = !drawerOpen.value }) {
-            Text(text = "☰", style = TextStyle.titleMedium, color = Color.OnSurface)
+        val source    = useMutableInteractionSource()
+        val isHovered = useIsHovered(source)
+        val isPressed = useIsPressed(source)
+        
+        val bg = when {
+            isPressed -> "#cbd5e1"
+            isHovered -> "#f1f5f9"
+            else      -> "transparent"
+        }
+
+        Card(
+            modifier = Modifier
+                .size(40)
+                .background(bg)
+                .borderRadius(20)
+                .hoverable(source)
+                .pressable(source)
+                .cursor("pointer"),
+            elevation = 0,
+            onClick = { drawerOpen.value = !drawerOpen.value }
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = "center") {
+                Text(text = "☰", style = TextStyle.titleLarge, color = Color.OnSurface)
+            }
         }
     } else {
         Box(

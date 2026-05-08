@@ -91,14 +91,36 @@ component fun Sidebar(currentPage: String, onNavigate: (String) -> Unit, onClose
 
 component fun SidebarCloseControl(onClose: (() -> Unit)?) {
     if (onClose != null) {
+        val source    = useMutableInteractionSource()
+        val isHovered = useIsHovered(source)
+        val isPressed = useIsPressed(source)
+        
+        val bg = when {
+            isPressed -> "#cbd5e1"
+            isHovered -> "#f1f5f9"
+            else      -> "transparent"
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .paddingHorizontal(16)
                 .paddingBottom(8),
             horizontalArrangement = "end") {
-            IconButton(onClick = { onClose() }) {
-                Text(text = "✕", style = TextStyle.titleMedium, color = Color.OnSurface)
+            Card(
+                modifier = Modifier
+                    .size(36)
+                    .background(bg)
+                    .borderRadius(18)
+                    .hoverable(source)
+                    .pressable(source)
+                    .cursor("pointer"),
+                elevation = 0,
+                onClick = { onClose() }
+            ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = "center") {
+                    Text(text = "✕", style = TextStyle.titleMedium, color = Color.OnSurface)
+                }
             }
         }
     } else {
