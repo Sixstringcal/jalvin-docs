@@ -38,6 +38,7 @@ import src.pages.KnownIssuesPage.KnownIssuesPage
 import src.components.Sidebar.Sidebar
 import src.components.DocTheme.DocTheme
 import src.components.DocTheme.DocColors
+import src.components.DocComponents.CircularIconButton
 
 component fun DocsApp() {
     val currentPage = mutableStateOf("introduction")
@@ -67,31 +68,10 @@ component fun DocsApp() {
 
 component fun TopBarNavIcon(isCompact: Boolean, drawerOpen: MutableState<Boolean>) {
     if (isCompact) {
-        val source    = useMutableInteractionSource()
-        val isHovered = useIsHovered(source)
-        val isPressed = useIsPressed(source)
-        
-        val bg = when {
-            isPressed -> "#cbd5e1"
-            isHovered -> "#f1f5f9"
-            else      -> "transparent"
-        }
-
-        Card(
-            modifier = Modifier
-                .size(40)
-                .background(bg)
-                .borderRadius(20)
-                .hoverable(source)
-                .pressable(source)
-                .cursor("pointer"),
-            elevation = 0,
+        CircularIconButton(
+            icon = "☰",
             onClick = { drawerOpen.value = !drawerOpen.value }
-        ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = "center") {
-                Text(text = "☰", style = TextStyle.titleLarge, color = Color.OnSurface)
-            }
-        }
+        )
     } else {
         Box(
             modifier = Modifier.size(32).background(Color.Primary).borderRadius(6),

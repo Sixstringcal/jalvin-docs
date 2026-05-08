@@ -16,6 +16,7 @@ import @jalvin/ui.Modifier
 import @jalvin/ui.Color
 import @jalvin/ui.TextStyle
 import src.components.DocTheme.DocColors
+import src.components.DocComponents.CircularIconButton
 
 data class NavItem(val id: String, val label: String)
 data class NavSection(val title: String, val items: List<NavItem>)
@@ -91,37 +92,18 @@ component fun Sidebar(currentPage: String, onNavigate: (String) -> Unit, onClose
 
 component fun SidebarCloseControl(onClose: (() -> Unit)?) {
     if (onClose != null) {
-        val source    = useMutableInteractionSource()
-        val isHovered = useIsHovered(source)
-        val isPressed = useIsPressed(source)
-        
-        val bg = when {
-            isPressed -> "#cbd5e1"
-            isHovered -> "#f1f5f9"
-            else      -> "transparent"
-        }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .paddingHorizontal(16)
                 .paddingBottom(8),
             horizontalArrangement = "end") {
-            Card(
-                modifier = Modifier
-                    .size(36)
-                    .background(bg)
-                    .borderRadius(18)
-                    .hoverable(source)
-                    .pressable(source)
-                    .cursor("pointer"),
-                elevation = 0,
-                onClick = { onClose() }
-            ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = "center") {
-                    Text(text = "✕", style = TextStyle.titleMedium, color = Color.OnSurface)
-                }
-            }
+            CircularIconButton(
+                icon = "✕",
+                onClick = { onClose() },
+                size = 36,
+                style = TextStyle.titleMedium
+            )
         }
     } else {
         Box(modifier = Modifier.size(0)) {}

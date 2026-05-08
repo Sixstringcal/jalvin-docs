@@ -14,8 +14,46 @@ import @jalvin/ui.Modifier
 import @jalvin/ui.Color
 import @jalvin/ui.Canvas
 import @jalvin/ui.TextStyle
+import @jalvin/ui.useMutableInteractionSource
+import @jalvin/ui.useIsHovered
+import @jalvin/ui.useIsPressed
 import src.components.DocTheme.DocSpacing
 import src.components.DocTheme.DocColors
+
+// ── Shared UI Primitives ─────────────────────────────────────────────────────
+
+component fun CircularIconButton(
+    icon: String,
+    onClick: () -> Unit,
+    size: Int = 40,
+    style: TextStyle = TextStyle.titleLarge
+) {
+    val source    = useMutableInteractionSource()
+    val isHovered = useIsHovered(source)
+    val isPressed = useIsPressed(source)
+    
+    val bg = when {
+        isPressed -> "#cbd5e1"
+        isHovered -> "#f1f5f9"
+        else      -> "transparent"
+    }
+
+    return Card(
+        modifier = Modifier
+            .size(size)
+            .background(bg)
+            .borderRadius(size / 2)
+            .hoverable(source)
+            .pressable(source)
+            .cursor("pointer"),
+        elevation = 0,
+        onClick = onClick
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = "center") {
+            Text(text = icon, style = style, color = Color.OnSurface)
+        }
+    }
+}
 
 // ── Page wrapper ─────────────────────────────────────────────────────────────
 
