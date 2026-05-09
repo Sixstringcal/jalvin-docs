@@ -82,14 +82,16 @@ fun notSuspend() {
 }""")
         }
 
-        DocSection(title = "Pattern Matching Errors (E0300-E0321)") {
+        DocSection(title = "Pattern and Component API Errors (E0300-E0323)") {
             DocTable(
                 headers = listOf("Code", "Message", "Cause and fix"),
                 rows = listOf(
                     TableRow("E0300", "Non-exhaustive when on sealed class", "when on a sealed class does not cover all variants and has no else branch."),
                     TableRow("E0310", "Duplicate when branch",               "Two branches in a when expression match the same condition."),
                     TableRow("E0320", "Assignment to const val",             "Trying to reassign a const val after initialisation."),
-                    TableRow("E0321", "lateinit applied to non-var or primitive", "lateinit requires var and a non-primitive reference type.")
+                    TableRow("E0321", "lateinit applied to non-var or primitive", "lateinit requires var and a non-primitive reference type."),
+                    TableRow("E0322", "Component API call outside component", "Component APIs (for example remember() or LaunchedEffect()) must be called directly inside a component fun body."),
+                    TableRow("E0323", "Component API call inside nested control flow", "Component APIs cannot be invoked inside nested if/for/when/lambda blocks. Lift the call to top-level component scope.")
                 ))
             CodeBlock(
                 code = """// E0300 - non-exhaustive when
@@ -102,7 +104,19 @@ fun area(s: Shape) = when (s) {
 
 // E0320 - assignment to const val
 const val MAX: Int = 100
-MAX = 200   // E0320""")
+MAX = 200   // E0320
+
+// E0322 - component API outside component scope
+fun badHelper() {
+    remember { 0 }   // E0322
+}
+
+// E0323 - component API inside nested control flow
+component fun Bad(flag: Boolean) {
+    if (flag) {
+        LaunchedEffect("x") { }   // E0323
+    }
+}""")
         }
 
         DocSection(title = "Warnings (W0001-W0004)") {

@@ -24,6 +24,15 @@ component fun GettingStartedPage(onNavigate: (String) -> Unit) {
 npm install @jalvin/runtime""")
         }
 
+        DocSection(title = "Package Alignment (Important)") {
+            Callout(
+                kind = "warning",
+                message = "Keep @jalvin/compiler, @jalvin/runtime, @jalvin/ui, @jalvin/cli, and @jalvin/vite-plugin aligned and updated together. Mixed package states are a common source of blank-page and runtime mismatch issues.")
+            Prose(text = "Recommended install pattern for Vite projects:")
+            CodeBlock(code = """npm install @jalvin/compiler @jalvin/runtime @jalvin/ui
+npm install --save-dev @jalvin/cli @jalvin/vite-plugin""")
+        }
+
         DocSection(title = "Creating a New Project") {
             Prose(text = "Use jalvin init to scaffold a project:")
             CodeBlock(code = """jalvin init my-app
