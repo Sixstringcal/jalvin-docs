@@ -69,7 +69,7 @@ component fun DocPage(title: String, subtitle: String = "", children: Any) {
         Column(modifier = Modifier.fillMaxWidth(), spacing = DocSpacing.sectionGap) {
             Column(modifier = Modifier.fillMaxWidth(), spacing = 8) {
                 Text(text = title, style = TextStyle.displaySmall, color = DocColors.headingColor)
-                if (subtitle.isNotBlank()) {
+                if (subtitle != "") {
                     Text(text = subtitle, style = TextStyle.bodyLarge, color = DocColors.mutedText)
                 }
                 Divider(modifier = Modifier.fillMaxWidth().paddingTop(8), color = Color.Outline)
@@ -118,7 +118,7 @@ component fun ExternalLink(label: String, url: String) {
 
 component fun CodeBlock(code: String, label: String = "") {
     return Column(modifier = Modifier.fillMaxWidth(), spacing = 0) {
-        if (label.isNotBlank()) {
+        if (label != "") {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -260,7 +260,7 @@ component fun PageNav(
         modifier = Modifier.fillMaxWidth().paddingTop(32),
         spacing = 8,
         horizontalArrangement = "spaceBetween") {
-        if (prevPage.isNotBlank()) {
+        if (prevPage != "") {
             Card(
                 modifier = Modifier
                     .background(DocColors.navBg)
@@ -279,7 +279,7 @@ component fun PageNav(
         } else {
             Box(modifier = Modifier.Default.flex(1))
         }
-        if (nextPage.isNotBlank()) {
+        if (nextPage != "") {
             Card(
                 modifier = Modifier
                     .background(DocColors.navBg)

@@ -1,3 +1,4 @@
+import @jalvin/runtime.rememberMutableStateOf
 import @jalvin/runtime.mutableStateOf
 import @jalvin/runtime.calculateWindowSizeClass
 import @jalvin/runtime.WindowSizeClassState
@@ -35,14 +36,15 @@ import src.pages.NullSafetyPage.NullSafetyPage
 import src.pages.ErrorCodesPage.ErrorCodesPage
 import src.pages.AnnotationsPage.AnnotationsPage
 import src.pages.KnownIssuesPage.KnownIssuesPage
+import src.pages.ComposeNavigationPage.ComposeNavigationPage
 import src.components.Sidebar.Sidebar
 import src.components.DocTheme.DocTheme
 import src.components.DocTheme.DocColors
 import src.components.DocComponents.CircularIconButton
 
 component fun DocsApp() {
-    val currentPage = mutableStateOf("introduction")
-    val drawerOpen  = mutableStateOf(false)
+    val currentPage = rememberMutableStateOf("introduction") 
+    val drawerOpen  = rememberMutableStateOf(false)
     val windowSize: WindowSizeClassState = calculateWindowSizeClass()
     val isCompact   = windowSize.widthSizeClass == "Compact"
 
@@ -227,6 +229,10 @@ component fun PageContent(page: String, onNavigate: (String) -> Unit) {
     } else if (page == "mobile") {
         Box(modifier = Modifier.fillMaxSize()) {
             MobilePage(onNavigate = onNavigate)
+        }
+    } else if (page == "compose-navigation") {
+        Box(modifier = Modifier.fillMaxSize()) {
+            ComposeNavigationPage(onNavigate = onNavigate)
         }
     } else if (page == "stdlib") {
         Box(modifier = Modifier.fillMaxSize()) {

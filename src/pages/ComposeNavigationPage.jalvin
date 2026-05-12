@@ -1,0 +1,168 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ComposeNavigationPage.jalvin — Compose Navigation Router reference
+// ─────────────────────────────────────────────────────────────────────────────
+import src.components.DocComponents.DocPage
+import src.components.DocComponents.DocSection
+import src.components.DocComponents.Prose
+import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.PageNav
+
+component fun ComposeNavigationPage(onNavigate: (String) -> Unit) {
+    return DocPage(
+        title    = "Compose Navigation",
+        subtitle = "Hash-based routing with a Compose-style declarative DSL.") {
+
+        DocSection(title = "Overview") {
+            Prose(text = "Jalvin's navigation system is modelled after Android Jetpack Compose Navigation. Routes are declared with a DSL, a NavController manages the back stack, and NavHost renders whichever route is currently active.")
+            Prose(text = "Navigation is hash-based: the browser URL updates automatically (e.g. #/profile/42), so the back button and deep-linking work without any extra configuration.")
+        }
+
+        DocSection(title = "NavController") {
+            Prose(text = "NavController manages the back stack and drives all navigation. Create one with rememberNavController() so the same instance survives re-renders.")
+            CodeBlock(
+                code = """val navController = rememberNavController()
+
+// Navigate forward
+navController.navigate("settings")
+
+// Navigate with a path parameter
+navController.navigate("profile/42")
+
+// Pop the current screen
+val popped: Boolean = navController.popBackStack()
+
+// Check whether popping is possible
+if (navController.canPopBackStack()) {
+    navController.popBackStack()
+}""")
+        }
+
+        DocSection(title = "NavHost") {
+            Prose(text = "NavHost is a component that renders the currently active route. Pass it a NavController and the name of the start destination, then declare routes in the trailing builder block using composable().")
+            CodeBlock(
+                code = """NavHost(
+    navController  = navController,
+    startDestination = "home") {
+
+    composable("home") { entry ->
+        HomeScreen(onNavigate = navController::navigate)
+    }
+
+    composable("settings") { entry ->
+        SettingsScreen(onBack = { navController.popBackStack() })
+    }
+
+    composable("profile/{userId}") { entry ->
+        val userId = entry.arguments["userId"] ?: ""
+        ProfileScreen(userId = userId)
+    }
+}""")
+        }
+
+        DocSection(title = "Defining Routes") {
+            Prose(text = "Routes are declared with composable() inside the NavHost builder. The pattern string can contain named path parameters wrapped in braces.")
+            CodeBlock(
+                code = """// Static route
+composable("about") { _ -> AboutScreen() }
+
+// Single path parameter
+composable("user/{id}") { entry ->
+    UserScreen(id = entry.arguments["id"] ?: "")
+}
+
+// Multiple parameters
+composable("org/{orgId}/repo/{repoId}") { entry ->
+    RepoScreen(
+        orgId  = entry.arguments["orgId"]  ?: "",
+        repoId = entry.arguments["repoId"] ?: ""
+    )
+}""")
+            Prose(text = "Routes are matched in declaration order. The first pattern that matches the destination wins.")
+        }
+
+        DocSection(title = "NavOptions") {
+            Prose(text = "Pass a NavOptions block to navigate() to control back-stack behaviour.")
+            CodeBlock(
+                code = """// Clear back stack back to (but not including) \"login\"
+navController.navigate("home", NavOptions(
+    popUpTo          = "login",
+    popUpToInclusive = false
+))
+
+// Clear login itself too (full stack replacement)
+navController.navigate("home", NavOptions(
+    popUpTo          = "login",
+    popUpToInclusive = true
+))
+
+// Don't add a duplicate if already on this screen
+navController.navigate("profile/42", NavOptions(
+    launchSingleTop = true
+))""")
+        }
+
+        DocSection(title = "BackStackEntry") {
+            Prose(text = "Each composable content function receives a BackStackEntry describing the active route.")
+            CodeBlock(
+                code = """composable("post/{postId}") { entry: BackStackEntry ->
+    // The route pattern that was matched
+    val pattern: String = entry.route          // "post/{postId}"
+
+    // The actual destination that was navigated to
+    val dest: String    = entry.destination    // "post/99"
+
+    // Extracted path parameters
+    val postId: String  = entry.arguments["postId"] ?: ""
+
+    PostDetailScreen(postId = postId)
+}""")
+        }
+
+        DocSection(title = "Complete Example") {
+            Prose(text = "A minimal two-screen app with a home screen and a detail screen.")
+            CodeBlock(
+                label = "App.jalvin",
+                code = """component fun App() {
+    val nav = rememberNavController()
+
+    NavHost(navController = nav, startDestination = "home") {
+
+        composable("home") { _ ->
+            HomeScreen(onOpenItem = { id -> nav.navigate("item/${'$'}id") })
+        }
+
+        composable("item/{itemId}") { entry ->
+            val itemId = entry.arguments["itemId"] ?: ""
+            ItemScreen(
+                itemId = itemId,
+                onBack = { nav.popBackStack() }
+            )
+        }
+    }
+}
+
+component fun HomeScreen(onOpenItem: (String) -> Unit) {
+    Column {
+        Text(text = "Home")
+        Button(onClick = { onOpenItem("42") }) {
+            Text(text = "Open item 42")
+        }
+    }
+}
+
+component fun ItemScreen(itemId: String, onBack: () -> Unit) {
+    Column {
+        Text(text = "Item ${'$'}itemId")
+        Button(onClick = onBack) { Text(text = "Back") }
+    }
+}""")
+        }
+
+        PageNav(
+            prevLabel  = "Mobile & Adaptive Layout",
+            prevPage   = "mobile",
+            nextLabel  = "Collections & stdlib",
+            nextPage   = "stdlib",
+            onNavigate = onNavigate)
+    }
+}

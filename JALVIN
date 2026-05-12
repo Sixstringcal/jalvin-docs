@@ -1,5 +1,8 @@
-name        = jalvin-docs
-version     = 1.0.0
-rootDir     = src
-outDir      = dist
-jsx         = true
+name           = jalvin-docs
+version        = 2.0.42
+rootDir        = src
+outDir         = dist
+entryFile      = src/DocsApp.jalvin
+entryComponent = DocsApp
+title          = Jalvin Developer Docs
+port           = 3000

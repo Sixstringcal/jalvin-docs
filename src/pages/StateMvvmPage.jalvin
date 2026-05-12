@@ -135,7 +135,7 @@ unsubscribe()""")
                 placeholder = "New todo…")
             Button(
                 text    = "Add",
-                enabled = newTitle.value.isNotBlank(),
+                enabled = newTitle.value != "",
                 onClick = {
                     vm.add(newTitle.value)
                     newTitle.value = ""

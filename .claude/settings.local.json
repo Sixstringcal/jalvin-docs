@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"C:\\\\Users\\\\Calvin\\\\GitHub Projects\\\\jalvin\" | grep -i jalvin)",
+      "Read(//c/Users/Calvin/GitHub Projects/jalvin/**)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Calvin\\\\GitHub Projects\\\\jalvin\\\\packages\\\\runtime\\\\src\\\\\" -Name)",
+      "Bash(xargs grep -l \"NavHost\\\\|NavController\")"
+    ]
+  }
+}

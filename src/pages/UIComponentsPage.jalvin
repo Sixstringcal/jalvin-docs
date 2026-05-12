@@ -209,7 +209,7 @@ Input(
     placeholder    = "you@example.com",
     type           = "email",    // text | email | password | number | search
     supportingText = if (!email.value.contains("@")) "Enter a valid email" else "",
-    isError        = !email.value.contains("@") && email.value.isNotBlank(),
+    isError        = !email.value.contains("@") && email.value != "",
     readOnly       = false,
     enabled        = true
 )""")
