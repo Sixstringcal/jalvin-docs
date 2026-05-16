@@ -2,9 +2,11 @@
   "name": "jalvin-docs",
   "private": true,
   "version": "2.0.47",
+  "type": "module",
   "scripts": {
     "dev": "jalvin dev",
-    "build": "vite build",
+    "build": "jalvin build",
+    "check": "jalvin check",
     "preview": "vite preview"
   },
   "overrides": {
