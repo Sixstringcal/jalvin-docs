@@ -5,6 +5,7 @@ import src.components.DocComponents.DocPage
 import src.components.DocComponents.DocSection
 import src.components.DocComponents.Prose
 import src.components.DocComponents.CodeBlock
+import src.components.DocComponents.Callout
 import src.components.DocComponents.PageNav
 
 component fun ComposeNavigationPage(onNavigate: (String) -> Unit) {
@@ -22,7 +23,7 @@ component fun ComposeNavigationPage(onNavigate: (String) -> Unit) {
             CodeBlock(
                 code = """val navController = rememberNavController()
 
-// Navigate forward
+// Navigate forward — updates the back stack and syncs the URL silently (no double hashchange)
 navController.navigate("settings")
 
 // Navigate with a path parameter
@@ -34,7 +35,13 @@ val popped: Boolean = navController.popBackStack()
 // Check whether popping is possible
 if (navController.canPopBackStack()) {
     navController.popBackStack()
-}""")
+}
+
+// Release the hashchange listener when the NavHost is unmounted
+navController.dispose()""")
+            Callout(
+                kind    = "warning",
+                message = "Always call navController.dispose() when the NavHost is unmounted. Without it, the hashchange listener lives for the entire page lifetime and can fire on unrelated URL changes, causing phantom navigation.")
         }
 
         DocSection(title = "NavHost") {

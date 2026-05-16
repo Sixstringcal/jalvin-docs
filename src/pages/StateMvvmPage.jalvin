@@ -16,6 +16,7 @@ import src.components.DocComponents.Prose
 import src.components.DocComponents.CodeBlock
 import src.components.DocComponents.DocTable
 import src.components.DocComponents.TableRow
+import src.components.DocComponents.Callout
 import src.components.DocComponents.PageNav
 
 component fun StateMvvmPage(onNavigate: (String) -> Unit) {
@@ -102,8 +103,8 @@ unsubscribe()""")
                     TableRow("remember { compute() }",       "Memoised value — re-computed only when dependencies change"),
                     TableRow("collectAsState(flow)",         "Subscribe to a StateFlow; triggers re-render on emission"),
                     TableRow("useViewModel(\"key\") { Vm() }","Get or create a ViewModel scoped to the component lifecycle"),
-                    TableRow("LaunchedEffect(deps) { }",     "Run a suspend block when the component mounts or deps change"),
-                    TableRow("DisposableEffect(deps) { cleanup }", "Run setup and cleanup logic tied to component lifetime"),
+                    TableRow("LaunchedEffect(deps) { signal -> }", "Run a coroutine when deps change; the previous run is cancelled via AbortSignal before the next starts"),
+                    TableRow("DisposableEffect(deps) { cleanup }", "Run setup when deps change; the returned cleanup lambda is called before the next run and on unmount"),
                     TableRow("SideEffect { }",               "Run a non-suspend side effect after every successful render")
                 ))
             CodeBlock(
@@ -143,6 +144,12 @@ unsubscribe()""")
         }
     }
 }""")
+            Callout(
+                kind    = "tip",
+                message = "All hooks (remember, collectAsState, DisposableEffect, LaunchedEffect) must be called inside a composable context — a component fun or a function called from one. Each render() call creates its own isolated hook context, so multiple independent render() calls on the same page are safe.")
+            Callout(
+                kind    = "tip",
+                message = "collectAsState manages its own subscription slot per hook position. If you pass a different flow reference between renders (e.g. collectAsState(if (flag) flowA else flowB)), the old subscription is cancelled automatically before the new one is created — no stale subscriptions.")
         }
 
         DocSection(title = "Local State with mutableStateOf") {
@@ -167,6 +174,84 @@ unsubscribe()""")
         }
     }
 }""")
+        }
+
+        DocSection(title = "DisposableEffect — Cleanup") {
+            Prose(text = "DisposableEffect is the right hook for resources that must be released: event listeners, timers, WebSocket connections, or anything with a corresponding teardown step. Return a cleanup lambda from the effect block; it is called when deps change or the component unmounts.")
+            CodeBlock(
+                code = """DisposableEffect([dep]) {
+    val handle = startTimer()
+    return { stopTimer(handle) }  // called when dep changes or component unmounts
+}
+
+// Example: manual DOM event listener
+DisposableEffect([]) {
+    val handler = (e) => handleKey(e)
+    window.addEventListener("keydown", handler)
+    return { window.removeEventListener("keydown", handler) }
+}""")
+        }
+
+        DocSection(title = "LaunchedEffect — Cancellation") {
+            Prose(text = "LaunchedEffect starts a coroutine when the component mounts or when its deps change. When deps change, the previous coroutine is cancelled via an AbortController before the new one starts. The AbortSignal is passed as the first argument to your lambda.")
+            CodeBlock(
+                code = """LaunchedEffect([userId]) { signal ->
+    val data = fetchUser(userId, signal)
+    if (!signal.aborted) { result.value = data }
+}""")
+            Callout(
+                kind    = "tip",
+                message = "Always check signal.aborted before writing to state after an await point. If the effect was cancelled while the network request was in flight, skipping the state write avoids a stale re-render.")
+        }
+
+        DocSection(title = "MutableStateFlow.asFlow()") {
+            Prose(text = "Call .asFlow() on any MutableStateFlow to get a cold Flow that emits each new value as it changes. The current value is delivered exactly once as the first emission — there is no duplicate.")
+            CodeBlock(
+                code = """val count = MutableStateFlow(0)
+val flow  = count.asFlow()
+
+// Emits: 0, 1, 2 — initial value exactly once, then each update
+launch {
+    flow.collect { v -> println(v) }
+}
+count.value = 1
+count.value = 2""")
+        }
+
+        DocSection(title = "Flow Operators") {
+            Prose(text = "mapFlow, filterFlow, and debounceFlow return a DerivedFlow<T> — a read-only StateFlow with an extra dispose() method. Call dispose() when you no longer need the derived flow to release its upstream subscription and, for debounceFlow, cancel any pending debounce timer.")
+            CodeBlock(
+                code = """val source  = MutableStateFlow(0)
+
+// mapFlow — transform every emitted value
+val doubled = mapFlow(source) { it * 2 }
+println(doubled.value)   // 0
+
+source.value = 5
+println(doubled.value)   // 10
+
+doubled.dispose()   // unsubscribes from source; no more updates
+
+// filterFlow — only passes values matching the predicate
+val evens = filterFlow(source) { it % 2 == 0 }
+evens.dispose()
+
+// debounceFlow — delays emission until the value stabilises for the given ms
+val debounced = debounceFlow(source, 300)
+debounced.dispose()   // also cancels any pending timer""")
+            Callout(
+                kind    = "warning",
+                message = "Without calling dispose(), a DerivedFlow holds a permanent subscription to its source flow. Always dispose derived flows when their enclosing component or scope is destroyed.")
+        }
+
+        DocSection(title = "Flow.first() and Flow.take(n)") {
+            Prose(text = "first() suspends until the flow emits one value and returns it, aborting the producer immediately so no extra values are produced or side effects triggered. take(n) collects exactly n values and aborts the producer the same way.")
+            CodeBlock(
+                code = """// Suspend until the first emission
+val initial: Int = flow.first()
+
+// Collect exactly three values, then stop
+val batch: List<Int> = flow.take(3).toList()""")
         }
 
         PageNav(

@@ -1,5 +1,5 @@
 name           = jalvin-docs
-version        = 2.0.42
+version        = 2.0.47
 rootDir        = src
 outDir         = dist
 entryFile      = src/DocsApp.jalvin

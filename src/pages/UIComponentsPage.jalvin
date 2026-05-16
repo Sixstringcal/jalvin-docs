@@ -8,6 +8,7 @@ import src.components.DocComponents.Prose
 import src.components.DocComponents.CodeBlock
 import src.components.DocComponents.DocTable
 import src.components.DocComponents.TableRow
+import src.components.DocComponents.Callout
 import src.components.DocComponents.PageNav
 
 component fun UIComponentsPage(onNavigate: (String) -> Unit) {
@@ -46,7 +47,7 @@ component fun UIComponentsPage(onNavigate: (String) -> Unit) {
         }
 
         DocSection(title = "Layout — Box") {
-            Prose(text = "Box overlays children on top of each other. Use contentAlignment to control where the children are positioned.")
+            Prose(text = "Box overlays children on top of each other. Use contentAlignment to control where the children are positioned. All nine alignment values are fully implemented.")
             CodeBlock(
                 code = """Box(
     modifier         = Modifier.size(120).background(Color.Surface).borderRadius(8),
@@ -291,6 +292,10 @@ Divider(
         }
 
         DocSection(title = "Image & AsyncImage") {
+            Prose(text = "Both Image() and AsyncImage() return VNode. The loadingPlaceholder and errorPlaceholder props of AsyncImage accept VNode — pass the return value of any composable function, not a raw DOM element.")
+            Callout(
+                kind    = "warning",
+                message = "AsyncImage uses hooks internally (remember, collectAsState, DisposableEffect). It must be called inside a composable context — a component fun or a function called from one.")
             CodeBlock(
                 code = """// Synchronous image
 Image(
@@ -318,7 +323,7 @@ AsyncImage(
         }
 
         DocSection(title = "Canvas") {
-            Prose(text = "Canvas gives you a 2D drawing surface. The draw callback receives a 2D context and the canvas element, matching the standard 2D drawing API.")
+            Prose(text = "Canvas gives you a 2D drawing surface and returns a VNode. The draw callback receives a 2D context and the real HTMLCanvasElement (available via vnode.el after mount). Drawing is scheduled via requestAnimationFrame on every parent re-render, so reactive state read inside draw is always up to date. A ResizeObserver keeps the canvas sized correctly as the container changes.")
             CodeBlock(
                 code = """Canvas(
     width    = 400,
@@ -438,6 +443,13 @@ component fun InteractiveBox() {
                     TableRow("Color.White",          "Pure white"),
                     TableRow("Color.Black",          "Pure black")
                 ))
+        }
+
+        DocSection(title = "Architecture — VNode") {
+            Prose(text = "jalvinCreateElement(tag, props, children) always returns a VNode — a plain JavaScript object of the shape { tag, props, children, el? }. It never returns a real DOM element.")
+            Callout(
+                kind    = "warning",
+                message = "Component functions must return VNodes. Never call DOM methods (.appendChild, .innerHTML, .getContext, .width, .height, etc.) on the return value of a component fun or jalvinCreateElement — those values are VNodes, not HTMLElements. The el field is populated by the patch system after the VNode is mounted. If you genuinely need imperative DOM access, defer it until after mount using requestAnimationFrame and read from vnode.el.")
         }
 
         PageNav(

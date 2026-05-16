@@ -1,19 +1,23 @@
 {
   "name": "jalvin-docs",
   "private": true,
-  "version": "2.0.44",
+  "version": "2.0.47",
   "scripts": {
     "dev": "jalvin dev",
     "build": "vite build",
     "preview": "vite preview"
   },
+  "overrides": {
+    "@jalvin/compiler": "^2.0.47"
+  },
   "dependencies": {
-    "@jalvin/runtime": "^2.0.44",
-    "@jalvin/ui": "^2.0.44"
+    "@jalvin/compiler": "^2.0.47",
+    "@jalvin/runtime": "^2.0.47",
+    "@jalvin/ui": "^2.0.47"
   },
   "devDependencies": {
-    "@jalvin/cli": "^2.0.44",
-    "@jalvin/vite-plugin": "^2.0.44",
+    "@jalvin/cli": "^2.0.47",
+    "@jalvin/vite-plugin": "^2.0.47",
     "vite": "^5.0.0"
   }
 }

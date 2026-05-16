@@ -196,9 +196,18 @@ component fun Callout(kind: String = "note", message: String) {
 
 // ── Data table ────────────────────────────────────────────────────────────────
 
-data class TableRow(val col1: String, val col2: String, val col3: String = "")
+fun TableRow(col1: String, col2: String, col3: String = ""): Any {
+    val c1 = col1
+    val c2 = col2
+    val c3 = col3
+    return object {
+        val col1 = c1
+        val col2 = c2
+        val col3 = c3
+    }
+}
 
-component fun DocTable(headers: List<String>, rows: List<TableRow>) {
+component fun DocTable(headers: List<String>, rows: List<Any>) {
     return Card(elevation = 0, outlined = true, modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth(), spacing = 0) {
             // Header row

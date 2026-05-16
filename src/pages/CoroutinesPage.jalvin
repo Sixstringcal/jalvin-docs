@@ -11,6 +11,7 @@ import src.components.DocComponents.CodeBlock
 import src.components.DocComponents.Callout
 import src.components.DocComponents.PageNav
 
+
 component fun CoroutinesPage(onNavigate: (String) -> Unit) {
     return DocPage(
         title    = "Coroutines",
@@ -152,6 +153,12 @@ val (result, duration) = measureTimedValue {
     heavyComputation()
 }
 println("Result: ${'$'}result — Took ${'$'}{duration}ms")""")
+        }
+
+        DocSection(title = "runBlocking — Unsupported") {
+            Callout(
+                kind    = "warning",
+                message = "runBlocking() is not supported in JavaScript. The single-threaded event loop cannot advance Promises during a synchronous spin. Calling runBlocking() throws immediately with the message: \"runBlocking() is not supported in JavaScript. Await the Promise directly or use an async test runner.\" Do not use runBlocking() in Jalvin code — await the coroutine or use launch {} instead.")
         }
 
         PageNav(
