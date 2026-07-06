@@ -35,12 +35,12 @@ class MyClass { }
 @Nuked("Replaced by v2")
 @SomeOther
 val legacyConfig = loadLegacy()""")
-        }
+            }
 
-        DocSection(title = "@Nuked — Deprecation") {
-            Prose(text = "@Nuked marks a declaration as deprecated. The compiler emits a W0004 warning at every call site that references the annotated declaration. The string argument is the deprecation message shown to the developer.")
-            CodeBlock(
-                code = """@Nuked("Use fetchUserById() instead")
+            DocSection(title = "@Nuked — Deprecation") {
+                Prose(text = "@Nuked marks a declaration as deprecated. The compiler emits a W0004 warning at every call site that references the annotated declaration. The string argument is the deprecation message shown to the developer.")
+                CodeBlock(
+                    code = """@Nuked("Use fetchUserById() instead")
 suspend fun getUser(id: Int): User {
     return api.get("/users/${'$'}id").body()
 }
@@ -51,15 +51,15 @@ suspend fun getUser(id: Int): User {
 suspend fun fetchUserById(id: Int): User {
     return api.get("/users/${'$'}id").body()
 }""")
-            Callout(
-                kind    = "tip",
-                message = "Always provide a deprecation message that explains what the replacement is. A message like \"Deprecated\" without a migration path is unhelpful to developers consuming your code.")
-        }
+                    Callout(
+                        kind    = "tip",
+                        message = "Always provide a deprecation message that explains what the replacement is. A message like \"Deprecated\" without a migration path is unhelpful to developers consuming your code.")
+                }
 
-        DocSection(title = "Custom Annotations") {
-            Prose(text = "You may annotate declarations with any @Name that is not a known built-in. The compiler passes unknown annotations through to the generated output as JSDoc comments and does not process them further.")
-            CodeBlock(
-                code = """// Custom annotation — compiler ignores it but passes it through
+                DocSection(title = "Custom Annotations") {
+                    Prose(text = "You may annotate declarations with any @Name that is not a known built-in. The compiler passes unknown annotations through to the generated output as JSDoc comments and does not process them further.")
+                    CodeBlock(
+                        code = """// Custom annotation — compiler ignores it but passes it through
 @Experimental
 fun newFeature(): String = "unstable"
 
@@ -67,25 +67,25 @@ fun newFeature(): String = "unstable"
 @Since("2.0")
 fun stableApi(): String = "stable"
 """)
-            Callout(
-                kind    = "note",
-                message = "Custom annotations are not yet validated by the compiler. The annotation name and arguments are emitted as JSDoc @annotations in the generated output for tooling to consume.")
-        }
+                        Callout(
+                            kind    = "note",
+                            message = "Custom annotations are not yet validated by the compiler. The annotation name and arguments are emitted as JSDoc @annotations in the generated output for tooling to consume.")
+                    }
 
-        DocSection(title = "Summary") {
-            DocTable(
-                headers = listOf("Annotation", "Effect"),
-                rows = listOf(
-                    TableRow("@Nuked(\"reason\")",  "Marks the declaration deprecated. W0004 emitted at every call site."),
-                    TableRow("@<Custom>(…)",        "Passed through to generated output as a JSDoc comment. No compiler processing.")
-                ))
-        }
+                    DocSection(title = "Summary") {
+                        DocTable(
+                            headers = listOf("Annotation", "Effect"),
+                            rows = listOf(
+                                TableRow("@Nuked(\"reason\")",  "Marks the declaration deprecated. W0004 emitted at every call site."),
+                                TableRow("@<Custom>(…)",        "Passed through to generated output as a JSDoc comment. No compiler processing.")
+                        ))
+                    }
 
-        PageNav(
-            prevLabel  = "Error Codes",
-            prevPage   = "error-codes",
-            nextLabel  = "Known Issues",
-            nextPage   = "known-issues",
-            onNavigate = onNavigate)
-    }
-}
+                    PageNav(
+                        prevLabel  = "Error Codes",
+                        prevPage   = "error-codes",
+                        nextLabel  = "Known Issues",
+                        nextPage   = "known-issues",
+                        onNavigate = onNavigate)
+                }
+            }
