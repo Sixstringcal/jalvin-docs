@@ -29,11 +29,11 @@ val api = Bibi("https://api.example.com") {
     headers { "Accept" to "application/json" }
     bearer(authToken)                        // Authorization: Bearer <token>
 }""")
-        }
+            }
 
-        DocSection(title = "GET Requests") {
-            CodeBlock(
-                code = """// Basic GET — returns a Response object
+            DocSection(title = "GET Requests") {
+                CodeBlock(
+                    code = """// Basic GET — returns a Response object
 val response = api.get("/users/1")
 
 // Deserialise the body into a typed object
@@ -47,21 +47,21 @@ val users: List<User> = api.get("/users", params = mapOf(
     "page"  to "1",
     "limit" to "20"
 )).body()""")
-        }
+                }
 
-        DocSection(title = "POST Requests") {
-            CodeBlock(
-                code = """data class NewUser(val name: String, val email: String)
+                DocSection(title = "POST Requests") {
+                    CodeBlock(
+                        code = """data class NewUser(val name: String, val email: String)
 
 val created: User = api.post(
     path = "/users",
     body = NewUser(name = "Alice", email = "alice@example.com")
 ).body()""")
-        }
+                    }
 
-        DocSection(title = "PUT and PATCH Requests") {
-            CodeBlock(
-                code = """// Replace an existing resource
+                    DocSection(title = "PUT and PATCH Requests") {
+                        CodeBlock(
+                            code = """// Replace an existing resource
 val updated: User = api.put(
     path = "/users/42",
     body = UserUpdate(name = "Alice Smith")
@@ -72,21 +72,21 @@ val patched: User = api.patch(
     path = "/users/42",
     body = mapOf("email" to "alice.smith@example.com")
 ).body()""")
-        }
+                        }
 
-        DocSection(title = "DELETE Requests") {
-            CodeBlock(
-                code = """// Delete — no response body
+                        DocSection(title = "DELETE Requests") {
+                            CodeBlock(
+                                code = """// Delete — no response body
 api.delete("/users/42")
 
 // Delete with confirmation body
 val response = api.delete("/posts/7", body = DeletionReason("Spam"))""")
-        }
+                            }
 
-        DocSection(title = "Error Handling") {
-            Prose(text = "Bibi throws BibiError for any non-2xx HTTP response. Catch it with a try/catch block or use runCatching for a functional style.")
-            CodeBlock(
-                code = """// try/catch
+                            DocSection(title = "Error Handling") {
+                                Prose(text = "Bibi throws BibiError for any non-2xx HTTP response. Catch it with a try/catch block or use runCatching for a functional style.")
+                                CodeBlock(
+                                    code = """// try/catch
 try {
     val user: User = api.get("/users/999").body()
 } catch (e: BibiError) {
@@ -98,12 +98,12 @@ val result = runCatchingAsync { api.get("/users/999").body<User>() }
 
 result.onSuccess { user  -> showUser(user) }
       .onFailure { error -> showError(error.message ?: "Network error") }""")
-        }
+                                }
 
-        DocSection(title = "Per-Request Overrides") {
-            Prose(text = "Override base headers or timeout on individual requests:")
-            CodeBlock(
-                code = """val adminApi = Bibi("https://api.example.com") {
+                                DocSection(title = "Per-Request Overrides") {
+                                    Prose(text = "Override base headers or timeout on individual requests:")
+                                    CodeBlock(
+                                        code = """val adminApi = Bibi("https://api.example.com") {
     bearer(userToken)
 }
 
@@ -112,12 +112,12 @@ val adminData = adminApi.get("/admin/stats") {
     bearer(adminToken)
     timeout(10_000)
 }.body<AdminStats>()""")
-        }
+                                    }
 
-        DocSection(title = "Complete Example") {
-            CodeBlock(
-                label = "UserService.jalvin",
-                code = """data class User(val id: Int, val name: String, val email: String?)
+                                    DocSection(title = "Complete Example") {
+                                        CodeBlock(
+                                            label = "UserService.jalvin",
+                                            code = """data class User(val id: Int, val name: String, val email: String?)
 data class NewUser(val name: String, val email: String)
 
 class UserService(token: String) {
@@ -139,13 +139,13 @@ launch {
     val users   = service.getAll()
     println("Total users: ${'$'}{users.size}")
 }""")
-        }
+                                        }
 
-        PageNav(
-            prevLabel  = "Coroutines",
-            prevPage   = "coroutines",
-            nextLabel  = "State & MVVM",
-            nextPage   = "state-mvvm",
-            onNavigate = onNavigate)
-    }
-}
+                                        PageNav(
+                                            prevLabel  = "Coroutines",
+                                            prevPage   = "coroutines",
+                                            nextLabel  = "State & MVVM",
+                                            nextPage   = "state-mvvm",
+                                            onNavigate = onNavigate)
+                                    }
+                                }
